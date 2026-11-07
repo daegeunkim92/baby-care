@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import type { Store } from '../store'
-import { STATUS_LABEL } from '../types'
+import { CATEGORIES, STATUS_LABEL } from '../types'
 
 export function ShoppingPage({ store }: { store: Store }) {
   const { ingredients, extras } = store.data
   const [name, setName] = useState('')
 
-  // 없음 → 조금 순서로
+  // 분류 안에서 없음 → 조금 순서로
   const toBuy = ingredients
     .filter((i) => i.status !== 'plenty')
     .sort((a, b) => (a.status === b.status ? 0 : a.status === 'out' ? -1 : 1))
@@ -25,33 +25,39 @@ export function ShoppingPage({ store }: { store: Store }) {
         <h1>장보기</h1>
       </header>
 
-      <section className="group">
-        <h2>사야 할 재료</h2>
-        {toBuy.length === 0 ? (
-          <p className="empty">재료가 모두 넉넉해요 👍</p>
-        ) : (
-          <ul className="list">
-            {toBuy.map((item) => (
-              <li key={item.id} className="row">
-                <label className={`check-row ${item.inCart ? 'done' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={item.inCart}
-                    onChange={() => store.toggleIngredientCart(item.id)}
-                  />
-                  <span className="row-name">{item.name}</span>
-                  <span className={`badge badge-${item.status}`}>
-                    {STATUS_LABEL[item.status]}
-                  </span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {toBuy.length === 0 ? (
+        <p className="empty">재료가 모두 넉넉해요 👍</p>
+      ) : (
+        CATEGORIES.map((cat) => {
+          const items = toBuy.filter((i) => i.category === cat)
+          if (items.length === 0) return null
+          return (
+            <section key={cat} className="group">
+              <h2>{cat}</h2>
+              <ul className="list">
+                {items.map((item) => (
+                  <li key={item.id} className="row">
+                    <label className={`check-row ${item.inCart ? 'done' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={item.inCart}
+                        onChange={() => store.toggleIngredientCart(item.id)}
+                      />
+                      <span className="row-name">{item.name}</span>
+                      <span className={`badge badge-${item.status}`}>
+                        {STATUS_LABEL[item.status]}
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        })
+      )}
 
       <section className="group">
-        <h2>기타 (용기, 지퍼백 등)</h2>
+        <h2>재료 외 (용기, 지퍼백 등)</h2>
         <form className="add-form" onSubmit={submit}>
           <input
             value={name}
