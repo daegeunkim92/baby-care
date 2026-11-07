@@ -4,16 +4,27 @@
     'Noto Sans KR', system-ui, sans-serif;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
-  --bg: #ffffff;
+  --bg: #f2f2f7;
+  --card: #ffffff;
   --fg: #1c1c1e;
   --muted: #8e8e93;
+  --line: #e5e5ea;
+  --accent: #ff8a3d;
+  --plenty: #34c759;
+  --low: #ff9f0a;
+  --out: #ff3b30;
+  --seg-bg: #eeeef0;
+  --tab-h: 56px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #000000;
+    --card: #1c1c1e;
     --fg: #f2f2f7;
     --muted: #8e8e93;
+    --line: #38383a;
+    --seg-bg: #2c2c2e;
   }
 }
 
@@ -24,36 +35,312 @@
 }
 
 html,
-body,
-#root {
-  margin: 0;
-  min-height: 100%;
-  min-height: 100dvh;
-}
-
 body {
+  margin: 0;
   background: var(--bg);
   color: var(--fg);
 }
 
-.app {
-  min-height: 100dvh;
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+/* iOS는 16px 미만 입력창에 포커스하면 화면을 확대함 */
+input,
+select {
+  font-size: 16px;
+}
+
+/* ---------- 레이아웃 ---------- */
+
+.content {
+  padding: env(safe-area-inset-top) 16px
+    calc(var(--tab-h) + env(safe-area-inset-bottom) + 24px);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0 12px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.group {
+  margin-top: 20px;
+}
+
+.group h2 {
+  margin: 0 0 6px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.empty {
+  margin: 32px 0;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.group .empty {
+  margin: 12px 0;
+}
+
+/* ---------- 탭 바 ---------- */
+
+.tab-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  height: calc(var(--tab-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--card);
+  border-top: 1px solid var(--line);
+}
+
+.tab-bar button {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.tab-bar button.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.tab-icon {
+  position: relative;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.tab-badge {
+  position: absolute;
+  top: -4px;
+  right: -12px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--out);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+/* ---------- 입력 ---------- */
+
+.add-form {
+  display: flex;
   gap: 8px;
-  /* 노치/홈 인디케이터 영역 피하기 */
-  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+  margin-bottom: 8px;
+}
+
+.add-form input,
+.add-form select {
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.add-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.primary-btn {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.primary-btn:disabled {
+  opacity: 0.4;
+}
+
+.primary-btn.wide {
+  width: 100%;
+  height: 50px;
+  font-size: 17px;
+}
+
+.text-btn {
+  color: var(--accent);
+  font-size: 17px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.chip {
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font-size: 14px;
+}
+
+/* ---------- 목록 ---------- */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--card);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 12px;
+}
+
+.row + .row {
+  border-top: 1px solid var(--line);
+}
+
+.row-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+}
+
+.delete-btn {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--out);
+  color: #fff;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  color: var(--muted);
+}
+
+/* 넉넉/조금/없음 선택 */
+.segmented {
+  display: flex;
+  flex-shrink: 0;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--seg-bg);
+}
+
+.seg {
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.seg[aria-checked='true'] {
+  color: #fff;
+  font-weight: 600;
+}
+
+.seg-plenty[aria-checked='true'] {
+  background: var(--plenty);
+}
+
+.seg-low[aria-checked='true'] {
+  background: var(--low);
+}
+
+.seg-out[aria-checked='true'] {
+  background: var(--out);
+}
+
+/* 장보기 체크 */
+.check-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  min-width: 0;
+}
+
+.check-row input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.check-row.done .row-name {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.badge-low {
+  background: var(--low);
+}
+
+.badge-out {
+  background: var(--out);
+}
+
+.bottom-action {
+  margin-top: 24px;
   text-align: center;
 }
 
-.app h1 {
-  margin: 0;
-  font-size: 32px;
-}
-
-.app p {
-  margin: 0;
+.hint {
+  margin: 8px 0 0;
+  font-size: 13px;
   color: var(--muted);
 }
