@@ -1017,3 +1017,14 @@ textarea.text-input {
 .food-row .row-link {
   gap: 10px;
 }
+
+.update-available {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.primary-btn.small {
+  height: 34px;
+  padding: 0 14px;
+  font-size: 15px;
+}

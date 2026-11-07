@@ -4,16 +4,35 @@ import { BackupSection } from '../components/BackupSection'
 import { formatAge, toDateStr } from '../date'
 import { summarizeFoods } from '../foods'
 import type { Store } from '../store'
+import { applyUpdate, checkForUpdate } from '../update'
 import { FirstFoodsPage } from './FirstFoodsPage'
 
 const builtAt = new Date(__APP_BUILT_AT__)
 const pad = (n: number) => String(n).padStart(2, '0')
 const BUILT_AT_LABEL = `${builtAt.getFullYear()}.${pad(builtAt.getMonth() + 1)}.${pad(builtAt.getDate())} ${pad(builtAt.getHours())}:${pad(builtAt.getMinutes())}`
 
+type UpdateState = 'idle' | 'checking' | 'latest' | 'available' | 'dev' | 'error'
+
+const UPDATE_MESSAGE: Partial<Record<UpdateState, string>> = {
+  latest: '최신 버전이에요.',
+  dev: '개발 서버에서는 확인할 수 없어요.',
+  error: '확인하지 못했어요. 인터넷 연결을 확인해 주세요.',
+}
+
 export function SettingsPage({ store }: { store: Store }) {
   const [view, setView] = useState<'main' | 'foods'>('main')
   const [editingBaby, setEditingBaby] = useState(false)
   const [today] = useState(() => toDateStr(new Date()))
+  const [update, setUpdate] = useState<UpdateState>('idle')
+
+  const check = async () => {
+    setUpdate('checking')
+    try {
+      setUpdate(await checkForUpdate())
+    } catch {
+      setUpdate('error')
+    }
+  }
   const { baby } = store.data
   const foodCount = summarizeFoods(store.data).length
 
@@ -96,7 +115,33 @@ export function SettingsPage({ store }: { store: Store }) {
             <span className="row-name">배포 시각</span>
             <span className="row-count">{BUILT_AT_LABEL}</span>
           </li>
+          <li className="row">
+            {update === 'available' ? (
+              <>
+                <span className="row-name update-available">새 버전이 있어요</span>
+                <button className="primary-btn small" onClick={applyUpdate}>
+                  업데이트
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="row-link text-btn"
+                  onClick={check}
+                  disabled={update === 'checking'}
+                >
+                  {update === 'checking' ? '확인 중…' : '최신 버전 확인'}
+                </button>
+                {UPDATE_MESSAGE[update] && (
+                  <span className="row-count">{UPDATE_MESSAGE[update]}</span>
+                )}
+              </>
+            )}
+          </li>
         </ul>
+        <p className="hint left">
+          배포하고 1~2분 뒤부터 새 버전이 보여요. 업데이트해도 데이터는 그대로예요.
+        </p>
       </section>
     </div>
   )
