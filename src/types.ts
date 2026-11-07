@@ -39,24 +39,30 @@ export interface AppData {
   extras: ExtraItem[]
 }
 
-/** 빠른 추가용 자주 쓰는 이유식 재료 */
-export const SUGGESTIONS: { name: string; category: Category }[] = [
-  { name: '쌀가루', category: '곡류' },
-  { name: '오트밀', category: '곡류' },
-  { name: '애호박', category: '채소' },
-  { name: '브로콜리', category: '채소' },
-  { name: '당근', category: '채소' },
-  { name: '양배추', category: '채소' },
-  { name: '감자', category: '채소' },
-  { name: '고구마', category: '채소' },
-  { name: '단호박', category: '채소' },
-  { name: '시금치', category: '채소' },
-  { name: '사과', category: '과일' },
-  { name: '배', category: '과일' },
-  { name: '바나나', category: '과일' },
-  { name: '소고기', category: '고기·생선' },
-  { name: '닭고기', category: '고기·생선' },
-  { name: '흰살생선', category: '고기·생선' },
-  { name: '두부', category: '두부·달걀·유제품' },
-  { name: '달걀', category: '두부·달걀·유제품' },
-]
+/** 빠른 추가용 자주 쓰는 이유식 재료 (분류별) */
+export const SUGGESTIONS: Record<Category, string[]> = {
+  곡류: ['쌀가루', '찹쌀가루', '현미', '오트밀', '퀴노아'],
+  채소: [
+    '애호박',
+    '브로콜리',
+    '당근',
+    '양배추',
+    '감자',
+    '고구마',
+    '단호박',
+    '시금치',
+    '청경채',
+    '무',
+    '양파',
+    '콜리플라워',
+    '비타민',
+    '오이',
+    '가지',
+    '파프리카',
+    '버섯',
+  ],
+  과일: ['사과', '배', '바나나', '아보카도', '블루베리', '딸기', '복숭아', '수박'],
+  '고기·생선': ['소고기', '닭고기', '돼지고기', '대구살', '광어', '연어'],
+  '두부·달걀·유제품': ['두부', '달걀노른자', '달걀', '요거트', '치즈'],
+  기타: ['다시마', '김', '들기름', '참기름'],
+}

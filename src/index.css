@@ -199,11 +199,45 @@ select {
   font-size: 17px;
 }
 
+/* 분류 선택: 가로 스크롤 */
+.category-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 0 -16px 10px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tab {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 18px;
+  background: var(--seg-bg);
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.category-tab[aria-selected='true'] {
+  background: var(--fg);
+  color: var(--bg);
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+.chip.added {
+  color: var(--muted);
+  border-style: dashed;
 }
 
 .chip {

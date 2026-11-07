@@ -12,7 +12,6 @@ export function InventoryPage({ store }: { store: Store }) {
   const [editing, setEditing] = useState(false)
 
   const existing = new Set(ingredients.map((i) => i.name))
-  const suggestions = SUGGESTIONS.filter((s) => !existing.has(s.name))
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,40 +29,45 @@ export function InventoryPage({ store }: { store: Store }) {
         )}
       </header>
 
+      <div className="category-tabs" role="tablist">
+        {CATEGORIES.map((c) => (
+          <button
+            key={c}
+            role="tab"
+            aria-selected={category === c}
+            className="category-tab"
+            onClick={() => setCategory(c)}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+
+      <div className="chips">
+        {SUGGESTIONS[category].map((s) =>
+          existing.has(s) ? (
+            <span key={s} className="chip added">
+              ✓ {s}
+            </span>
+          ) : (
+            <button key={s} className="chip" onClick={() => store.addIngredient(s, category)}>
+              + {s}
+            </button>
+          ),
+        )}
+      </div>
+
       <form className="add-form" onSubmit={submit}>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value as Category)}
-          aria-label="분류"
-        >
-          {CATEGORIES.map((c) => (
-            <option key={c}>{c}</option>
-          ))}
-        </select>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="재료 이름"
+          placeholder={`${category}에 직접 추가`}
           enterKeyHint="done"
         />
         <button type="submit" className="primary-btn" disabled={!name.trim()}>
           추가
         </button>
       </form>
-
-      {suggestions.length > 0 && (
-        <div className="chips">
-          {suggestions.map((s) => (
-            <button
-              key={s.name}
-              className="chip"
-              onClick={() => store.addIngredient(s.name, s.category)}
-            >
-              + {s.name}
-            </button>
-          ))}
-        </div>
-      )}
 
       {ingredients.length === 0 ? (
         <p className="empty">
