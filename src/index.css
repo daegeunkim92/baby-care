@@ -241,7 +241,12 @@ select {
   color: var(--bg);
 }
 
-/* 꾹 눌러서 옮길 수 있는 상태가 된 분류: 테두리만 (안쪽 그림자라 크기는 그대로) */
+/* 편집 모드: 누른 채 끌면 바로 옮겨지도록 브라우저 스크롤을 막음 */
+.category-tab.editable {
+  touch-action: none;
+}
+
+/* 끌고 있는 분류: 테두리만 (안쪽 그림자라 크기는 그대로) */
 .category-tab.dragging {
   position: relative;
   z-index: 1;
