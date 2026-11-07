@@ -6,21 +6,18 @@ export const STATUS_LABEL: Record<StockStatus, string> = {
   out: '없음',
 }
 
-export const CATEGORIES = [
-  '곡류',
-  '채소',
-  '과일',
-  '고기·생선',
-  '두부·달걀·유제품',
-  '기타',
-] as const
-
-export type Category = (typeof CATEGORIES)[number]
+/** 재료 분류 (곡류, 채소 …). 설정 탭에서 추가·이름 변경·삭제·순서 변경 */
+export interface Category {
+  id: string
+  name: string
+  /** 재고 탭에서 빠르게 추가할 수 있는 후보 재료 이름 */
+  suggestions: string[]
+}
 
 export interface Ingredient {
   id: string
   name: string
-  category: Category
+  categoryId: string
   status: StockStatus
   /** 장보기 목록에서 장바구니에 담았는지 (장보기 완료 시 '넉넉'으로 바뀜) */
   inCart: boolean
@@ -64,38 +61,43 @@ export interface MealRecord {
 }
 
 export interface AppData {
-  version: 1
+  version: 2
+  categories: Category[]
   ingredients: Ingredient[]
   extras: ExtraItem[]
   records: MealRecord[]
-  /** 빠른 추가 후보에서 사용자가 지운 재료 이름 */
-  hiddenSuggestions: string[]
 }
 
-/** 빠른 추가용 자주 쓰는 이유식 재료 (분류별) */
-export const SUGGESTIONS: Record<Category, string[]> = {
-  곡류: ['쌀가루', '찹쌀가루', '현미', '오트밀', '퀴노아'],
-  채소: [
-    '애호박',
-    '브로콜리',
-    '당근',
-    '양배추',
-    '감자',
-    '고구마',
-    '단호박',
-    '시금치',
-    '청경채',
-    '무',
-    '양파',
-    '콜리플라워',
-    '비타민',
-    '오이',
-    '가지',
-    '파프리카',
-    '버섯',
-  ],
-  과일: ['사과', '배', '바나나', '아보카도', '블루베리', '딸기', '복숭아', '수박'],
-  '고기·생선': ['소고기', '닭고기', '돼지고기', '대구살', '광어', '연어'],
-  '두부·달걀·유제품': ['두부', '달걀노른자', '달걀', '요거트', '치즈'],
-  기타: ['다시마', '김', '들기름', '참기름'],
-}
+/** 처음 시작할 때의 기본 분류와 후보 재료 */
+export const DEFAULT_CATEGORIES: { name: string; suggestions: string[] }[] = [
+  { name: '곡류', suggestions: ['쌀가루', '찹쌀가루', '현미', '오트밀', '퀴노아'] },
+  {
+    name: '채소',
+    suggestions: [
+      '애호박',
+      '브로콜리',
+      '당근',
+      '양배추',
+      '감자',
+      '고구마',
+      '단호박',
+      '시금치',
+      '청경채',
+      '무',
+      '양파',
+      '콜리플라워',
+      '비타민',
+      '오이',
+      '가지',
+      '파프리카',
+      '버섯',
+    ],
+  },
+  {
+    name: '과일',
+    suggestions: ['사과', '배', '바나나', '아보카도', '블루베리', '딸기', '복숭아', '수박'],
+  },
+  { name: '고기·생선', suggestions: ['소고기', '닭고기', '돼지고기', '대구살', '광어', '연어'] },
+  { name: '두부·달걀·유제품', suggestions: ['두부', '달걀노른자', '달걀', '요거트', '치즈'] },
+  { name: '기타', suggestions: ['다시마', '김', '들기름', '참기름'] },
+]

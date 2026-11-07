@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { InventoryPage } from './pages/InventoryPage'
 import { RecordsPage } from './pages/RecordsPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { ShoppingPage } from './pages/ShoppingPage'
 import { useStore } from './store'
 
-type Tab = 'records' | 'inventory' | 'shopping'
+type Tab = 'records' | 'inventory' | 'shopping' | 'settings'
 
 function App() {
   const store = useStore()
@@ -17,6 +18,7 @@ function App() {
         {tab === 'records' && <RecordsPage store={store} />}
         {tab === 'inventory' && <InventoryPage store={store} />}
         {tab === 'shopping' && <ShoppingPage store={store} />}
+        {tab === 'settings' && <SettingsPage store={store} />}
       </main>
 
       <nav className="tab-bar">
@@ -39,6 +41,13 @@ function App() {
             🛒{toBuyCount > 0 && <span className="tab-badge">{toBuyCount}</span>}
           </span>
           장보기
+        </button>
+        <button
+          className={tab === 'settings' ? 'active' : ''}
+          onClick={() => setTab('settings')}
+        >
+          <span className="tab-icon">⚙️</span>
+          설정
         </button>
       </nav>
     </div>

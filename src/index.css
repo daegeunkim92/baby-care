@@ -665,10 +665,6 @@ textarea.text-input {
   color: var(--out);
 }
 
-.chip.restore {
-  border-style: dashed;
-  color: var(--accent);
-}
 
 /* 편집 모드에서 재료 순서 바꾸기 */
 .drag-handle {
@@ -686,11 +682,6 @@ textarea.text-input {
   z-index: 1;
   background: var(--card);
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
-}
-
-.header-actions {
-  display: flex;
-  gap: 16px;
 }
 
 /* ---------- 백업 ---------- */
@@ -722,4 +713,51 @@ textarea.text-input {
 
 .backup-status.error {
   color: var(--out);
+}
+
+/* ---------- 설정 ---------- */
+
+.add-form.inline {
+  margin-top: 8px;
+}
+
+.hint.left {
+  margin: 6px 4px 0;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.drag-handle.left {
+  margin: 0 -8px 0 -12px;
+}
+
+.row-link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 52px;
+  text-align: left;
+}
+
+.row-count {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.chevron {
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.back-btn {
+  margin-left: -4px;
+  font-size: 17px;
+}
+
+.title-input {
+  width: 100%;
+  font-size: 17px;
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { guessMeal, toDateStr, toTimeStr } from '../date'
 import type { Store } from '../store'
-import { APPETITE_LABEL, CATEGORIES, MEALS } from '../types'
+import { APPETITE_LABEL, MEALS } from '../types'
 import type { Appetite, MealRecord } from '../types'
 
 const APPETITES: Appetite[] = ['good', 'normal', 'refused']
@@ -35,7 +35,7 @@ export function RecordForm({ store, record, onClose }: Props) {
   const set = <K extends keyof typeof draft>(key: K, value: (typeof draft)[K]) =>
     setDraft((d) => ({ ...d, [key]: value }))
 
-  const { ingredients: inventory, records } = store.data
+  const { ingredients: inventory, records, categories } = store.data
 
   // 최근 메뉴 (같은 메뉴 이름은 가장 최근 것만)
   const recentMenus: MealRecord[] = []
@@ -161,12 +161,12 @@ export function RecordForm({ store, record, onClose }: Props) {
               ))}
             </div>
           )}
-          {CATEGORIES.map((cat) => {
-            const items = inventory.filter((i) => i.category === cat)
+          {categories.map((cat) => {
+            const items = inventory.filter((i) => i.categoryId === cat.id)
             if (items.length === 0) return null
             return (
-              <div key={cat} className="chip-group">
-                <span className="chip-group-label">{cat}</span>
+              <div key={cat.id} className="chip-group">
+                <span className="chip-group-label">{cat.name}</span>
                 <div className="chips">
                   {items.map((i) => (
                     <button

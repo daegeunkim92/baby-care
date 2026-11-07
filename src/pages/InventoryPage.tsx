@@ -2,30 +2,29 @@ import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from 
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useState } from 'react'
-import { BackupSheet } from '../components/BackupSheet'
 import type { Store } from '../store'
-import { CATEGORIES, STATUS_LABEL, SUGGESTIONS } from '../types'
-import type { Category, Ingredient, StockStatus } from '../types'
+import { STATUS_LABEL } from '../types'
+import type { Ingredient, StockStatus } from '../types'
 
 const STATUSES: StockStatus[] = ['plenty', 'low', 'out']
 
 export function InventoryPage({ store }: { store: Store }) {
-  const { ingredients } = store.data
+  const { ingredients, categories } = store.data
   const [name, setName] = useState('')
-  const [category, setCategory] = useState<Category>('채소')
+  const [selectedId, setSelectedId] = useState<string>()
   const [editing, setEditing] = useState(false)
-  const [backupOpen, setBackupOpen] = useState(false)
   const sensors = useSensors(useSensor(PointerSensor))
 
+  // 고른 분류가 없거나 설정에서 지워졌으면 첫 분류
+  const category = categories.find((c) => c.id === selectedId) ?? categories[0]
+
   const existing = new Set(ingredients.map((i) => i.name))
-  const hidden = new Set(store.data.hiddenSuggestions)
   // 이미 재고에 있는 재료는 후보에서 뺌 (재고에서 지우면 다시 나타남)
-  const suggestions = SUGGESTIONS[category].filter((s) => !hidden.has(s) && !existing.has(s))
-  const hiddenInCategory = SUGGESTIONS[category].filter((s) => hidden.has(s))
+  const suggestions = category?.suggestions.filter((s) => !existing.has(s)) ?? []
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (store.addIngredient(name, category)) setName('')
+    if (category && store.addIngredient(name, category.id)) setName('')
   }
 
   return (
@@ -33,68 +32,54 @@ export function InventoryPage({ store }: { store: Store }) {
       <div className="sticky-panel">
         <header className="page-header">
           <h1>재료 재고</h1>
-          <div className="header-actions">
-            <button className="text-btn" onClick={() => setBackupOpen(true)}>
-              백업
-            </button>
+          {ingredients.length > 0 && (
             <button className="text-btn" onClick={() => setEditing((v) => !v)}>
               {editing ? '완료' : '편집'}
             </button>
-          </div>
+          )}
         </header>
 
-        <div className="category-tabs" role="tablist">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c}
-              role="tab"
-              aria-selected={category === c}
-              className="category-tab"
-              onClick={() => setCategory(c)}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        {category ? (
+          <>
+            <div className="category-tabs" role="tablist">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  role="tab"
+                  aria-selected={category.id === c.id}
+                  className="category-tab"
+                  onClick={() => setSelectedId(c.id)}
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
 
-        <div className="chips suggestion-chips">
-          {suggestions.map((s) =>
-            editing ? (
-              <button
-                key={s}
-                className="chip removable"
-                onClick={() => store.hideSuggestion(s)}
-                aria-label={`${s} 후보에서 지우기`}
-              >
-                {s} ✕
-              </button>
-            ) : (
-              <button key={s} className="chip" onClick={() => store.addIngredient(s, category)}>
-                + {s}
-              </button>
-            ),
-          )}
-          {editing && hiddenInCategory.length > 0 && (
-            <button
-              className="chip restore"
-              onClick={() => store.restoreSuggestions(hiddenInCategory)}
-            >
-              지운 후보 {hiddenInCategory.length}개 되돌리기
-            </button>
-          )}
-        </div>
+            {suggestions.length > 0 && (
+              <div className="chips suggestion-chips">
+                {suggestions.map((s) => (
+                  <button key={s} className="chip" onClick={() => store.addIngredient(s, category.id)}>
+                    + {s}
+                  </button>
+                ))}
+              </div>
+            )}
 
-        <form className="add-form" onSubmit={submit}>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={`${category}에 직접 추가`}
-            enterKeyHint="done"
-          />
-          <button type="submit" className="primary-btn" disabled={!name.trim()}>
-            추가
-          </button>
-        </form>
+            <form className="add-form" onSubmit={submit}>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={`${category.name}에 직접 추가`}
+                enterKeyHint="done"
+              />
+              <button type="submit" className="primary-btn" disabled={!name.trim()}>
+                추가
+              </button>
+            </form>
+          </>
+        ) : (
+          <p className="empty">설정 탭에서 재료 분류를 먼저 추가해 주세요.</p>
+        )}
       </div>
 
       {ingredients.length === 0 ? (
@@ -104,12 +89,12 @@ export function InventoryPage({ store }: { store: Store }) {
           부족해지면 '조금'이나 '없음'으로 바꾸면 장보기 목록에 자동으로 올라가요.
         </p>
       ) : (
-        CATEGORIES.map((cat) => {
-          const items = ingredients.filter((i) => i.category === cat)
+        categories.map((cat) => {
+          const items = ingredients.filter((i) => i.categoryId === cat.id)
           if (items.length === 0) return null
           return (
-            <section key={cat} className="group">
-              <h2>{cat}</h2>
+            <section key={cat.id} className="group">
+              <h2>{cat.name}</h2>
               <ul className="list">
                 <DndContext
                   sensors={sensors}
@@ -129,8 +114,6 @@ export function InventoryPage({ store }: { store: Store }) {
           )
         })
       )}
-
-      {backupOpen && <BackupSheet store={store} onClose={() => setBackupOpen(false)} />}
     </div>
   )
 }

@@ -1,38 +1,78 @@
 import { useEffect, useState } from 'react'
+import { DEFAULT_CATEGORIES } from './types'
 import type { AppData, Category, Ingredient, MealRecord, StockStatus } from './types'
 
 const STORAGE_KEY = 'baby-care:data'
 
-const EMPTY: AppData = { version: 1, ingredients: [], extras: [], records: [], hiddenSuggestions: [] }
+const newId = () => crypto.randomUUID()
+
+function initialData(): AppData {
+  return {
+    version: 2,
+    categories: DEFAULT_CATEGORIES.map((c) => ({ id: newId(), ...c })),
+    ingredients: [],
+    extras: [],
+    records: [],
+  }
+}
+
+/** 저장된 데이터나 백업 파일을 현재 형식(version 2)으로 변환. 형식이 맞지 않으면 null */
+function migrate(raw: any): AppData | null {
+  if (!Array.isArray(raw?.ingredients) || !Array.isArray(raw?.records)) return null
+  const rest = { extras: raw.extras ?? [], records: raw.records }
+
+  if (raw.version === 2 && Array.isArray(raw.categories)) {
+    return { version: 2, categories: raw.categories, ingredients: raw.ingredients, ...rest }
+  }
+
+  // version 1: 분류가 고정 목록이었고, 재료는 분류 이름으로 연결돼 있었음
+  if (raw.version === 1) {
+    const hidden: string[] = raw.hiddenSuggestions ?? []
+    const categories: Category[] = DEFAULT_CATEGORIES.map((c) => ({
+      id: newId(),
+      name: c.name,
+      suggestions: c.suggestions.filter((s) => !hidden.includes(s)),
+    }))
+    const fallback = categories[categories.length - 1].id // '기타'
+    const ingredients: Ingredient[] = raw.ingredients.map(
+      ({ category, ...i }: Omit<Ingredient, 'categoryId'> & { category: string }) => ({
+        ...i,
+        categoryId: categories.find((c) => c.name === category)?.id ?? fallback,
+      }),
+    )
+    return { version: 2, categories, ingredients, ...rest }
+  }
+
+  return null
+}
 
 function load(): AppData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return EMPTY
-    const parsed = JSON.parse(raw) as AppData
-    return { ...EMPTY, ...parsed }
+    return (raw && migrate(JSON.parse(raw))) || initialData()
   } catch {
-    return EMPTY
+    return initialData()
   }
 }
-
-const newId = () => crypto.randomUUID()
 
 /** 백업 파일 내용을 검사해서 AppData로 변환. 형식이 맞지 않으면 null */
 export function parseBackup(text: string): AppData | null {
   try {
-    const parsed = JSON.parse(text)
-    if (
-      parsed?.version !== 1 ||
-      !Array.isArray(parsed.ingredients) ||
-      !Array.isArray(parsed.records)
-    ) {
-      return null
-    }
-    return { ...EMPTY, ...parsed }
+    return migrate(JSON.parse(text))
   } catch {
     return null
   }
+}
+
+/** activeId 항목을 overId 항목 자리로 옮긴 새 배열 */
+function moveById<T extends { id: string }>(items: T[], activeId: string, overId: string) {
+  const from = items.findIndex((i) => i.id === activeId)
+  const to = items.findIndex((i) => i.id === overId)
+  if (from < 0 || to < 0 || from === to) return items
+  const next = [...items]
+  const [moved] = next.splice(from, 1)
+  next.splice(to, 0, moved)
+  return next
 }
 
 export function useStore() {
@@ -55,15 +95,22 @@ export function useStore() {
   return {
     data,
 
-    addIngredient(name: string, category: Category) {
+    addIngredient(name: string, categoryId: string) {
       const trimmed = name.trim()
       if (!trimmed) return false
       if (data.ingredients.some((i) => i.name === trimmed)) return false
+      const isSuggested = data.categories.some((c) => c.suggestions.includes(trimmed))
       setData((d) => ({
         ...d,
+        // 직접 입력한 재료도 후보에 넣어서, 재고에서 지운 뒤에도 다시 고를 수 있게 함
+        categories: isSuggested
+          ? d.categories
+          : d.categories.map((c) =>
+              c.id === categoryId ? { ...c, suggestions: [...c.suggestions, trimmed] } : c,
+            ),
         ingredients: [
           ...d.ingredients,
-          { id: newId(), name: trimmed, category, status: 'plenty', inCart: false },
+          { id: newId(), name: trimmed, categoryId, status: 'plenty', inCart: false },
         ],
       }))
       return true
@@ -83,28 +130,9 @@ export function useStore() {
       }))
     },
 
-    hideSuggestion(name: string) {
-      setData((d) => ({ ...d, hiddenSuggestions: [...d.hiddenSuggestions, name] }))
-    },
-
-    restoreSuggestions(names: string[]) {
-      setData((d) => ({
-        ...d,
-        hiddenSuggestions: d.hiddenSuggestions.filter((n) => !names.includes(n)),
-      }))
-    },
-
     /** activeId 재료를 overId 재료 자리로 옮김 (같은 분류 안에서 순서 바꾸기) */
     moveIngredient(activeId: string, overId: string) {
-      setData((d) => {
-        const from = d.ingredients.findIndex((i) => i.id === activeId)
-        const to = d.ingredients.findIndex((i) => i.id === overId)
-        if (from < 0 || to < 0 || from === to) return d
-        const ingredients = [...d.ingredients]
-        const [moved] = ingredients.splice(from, 1)
-        ingredients.splice(to, 0, moved)
-        return { ...d, ingredients }
-      })
+      setData((d) => ({ ...d, ingredients: moveById(d.ingredients, activeId, overId) }))
     },
 
     removeIngredient(id: string) {
@@ -139,6 +167,59 @@ export function useStore() {
           i.inCart ? { ...i, status: 'plenty', inCart: false } : i,
         ),
         extras: d.extras.filter((e) => !e.inCart),
+      }))
+    },
+
+    addCategory(name: string) {
+      const trimmed = name.trim()
+      if (!trimmed || data.categories.some((c) => c.name === trimmed)) return false
+      setData((d) => ({
+        ...d,
+        categories: [...d.categories, { id: newId(), name: trimmed, suggestions: [] }],
+      }))
+      return true
+    },
+
+    renameCategory(id: string, name: string) {
+      const trimmed = name.trim()
+      if (!trimmed || data.categories.some((c) => c.id !== id && c.name === trimmed)) return false
+      setData((d) => ({
+        ...d,
+        categories: d.categories.map((c) => (c.id === id ? { ...c, name: trimmed } : c)),
+      }))
+      return true
+    },
+
+    /** 재고에 이 분류 재료가 남아 있으면 지우지 않고 그 개수를 돌려줌 (0이면 삭제됨) */
+    removeCategory(id: string) {
+      const inStock = data.ingredients.filter((i) => i.categoryId === id).length
+      if (inStock > 0) return inStock
+      setData((d) => ({ ...d, categories: d.categories.filter((c) => c.id !== id) }))
+      return 0
+    },
+
+    moveCategory(activeId: string, overId: string) {
+      setData((d) => ({ ...d, categories: moveById(d.categories, activeId, overId) }))
+    },
+
+    addSuggestion(categoryId: string, name: string) {
+      const trimmed = name.trim()
+      if (!trimmed || data.categories.some((c) => c.suggestions.includes(trimmed))) return false
+      setData((d) => ({
+        ...d,
+        categories: d.categories.map((c) =>
+          c.id === categoryId ? { ...c, suggestions: [...c.suggestions, trimmed] } : c,
+        ),
+      }))
+      return true
+    },
+
+    removeSuggestion(categoryId: string, name: string) {
+      setData((d) => ({
+        ...d,
+        categories: d.categories.map((c) =>
+          c.id === categoryId ? { ...c, suggestions: c.suggestions.filter((s) => s !== name) } : c,
+        ),
       }))
     },
 

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import type { Store } from '../store'
-import { CATEGORIES, STATUS_LABEL } from '../types'
+import { STATUS_LABEL } from '../types'
 
 export function ShoppingPage({ store }: { store: Store }) {
-  const { ingredients, extras } = store.data
+  const { ingredients, extras, categories } = store.data
   const [name, setName] = useState('')
 
   // 분류 안에서 없음 → 조금 순서로
@@ -28,12 +28,12 @@ export function ShoppingPage({ store }: { store: Store }) {
       {toBuy.length === 0 ? (
         <p className="empty">재료가 모두 넉넉해요 👍</p>
       ) : (
-        CATEGORIES.map((cat) => {
-          const items = toBuy.filter((i) => i.category === cat)
+        categories.map((cat) => {
+          const items = toBuy.filter((i) => i.categoryId === cat.id)
           if (items.length === 0) return null
           return (
-            <section key={cat} className="group">
-              <h2>{cat}</h2>
+            <section key={cat.id} className="group">
+              <h2>{cat.name}</h2>
               <ul className="list">
                 {items.map((item) => (
                   <li key={item.id} className="row">

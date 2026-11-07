@@ -3,12 +3,7 @@ import { toDateStr } from '../date'
 import { parseBackup } from '../store'
 import type { Store } from '../store'
 
-interface Props {
-  store: Store
-  onClose: () => void
-}
-
-export function BackupSheet({ store, onClose }: Props) {
+export function BackupSection({ store }: { store: Store }) {
   const fileInput = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<{ message: string; error?: boolean } | null>(null)
   const { ingredients, records } = store.data
@@ -63,53 +58,43 @@ export function BackupSheet({ store, onClose }: Props) {
   }
 
   return (
-    <div className="sheet">
-      <header className="sheet-header">
-        <span />
+    <>
+      <section className="group">
         <h2>데이터 백업</h2>
-        <button className="text-btn strong" onClick={onClose}>
-          닫기
-        </button>
-      </header>
+        <div className="backup-card">
+          <h3>내보내기</h3>
+          <p>
+            지금 데이터(재료 {ingredients.length}개, 기록 {records.length}개)를 파일로 저장해요.
+            '파일에 저장'을 고르면 아이폰 파일 앱에 보관돼요.
+          </p>
+          <button className="primary-btn wide" onClick={exportData}>
+            백업 파일 내보내기
+          </button>
+        </div>
+      </section>
 
-      <div className="sheet-body">
-        <section className="field-group">
-          <div className="backup-card">
-            <h3>내보내기</h3>
-            <p>
-              지금 데이터(재료 {ingredients.length}개, 기록 {records.length}개)를 파일로
-              저장해요. '파일에 저장'을 고르면 아이폰 파일 앱에 보관돼요.
-            </p>
-            <button className="primary-btn wide" onClick={exportData}>
-              백업 파일 내보내기
-            </button>
-          </div>
-        </section>
-
-        <section className="field-group">
-          <div className="backup-card">
-            <h3>불러오기</h3>
-            <p>
-              내보낸 백업 파일을 골라 데이터를 되살려요. 지금 앱에 있는 데이터는 백업
-              내용으로 바뀌어요.
-            </p>
-            <button className="primary-btn wide" onClick={() => fileInput.current?.click()}>
-              백업 파일 불러오기
-            </button>
-            <input
-              ref={fileInput}
-              type="file"
-              accept=".json,application/json"
-              onChange={importData}
-              hidden
-            />
-          </div>
-        </section>
-
+      <section className="group">
+        <div className="backup-card">
+          <h3>불러오기</h3>
+          <p>
+            내보낸 백업 파일을 골라 데이터를 되살려요. 지금 앱에 있는 데이터는 백업 내용으로
+            바뀌어요.
+          </p>
+          <button className="primary-btn wide" onClick={() => fileInput.current?.click()}>
+            백업 파일 불러오기
+          </button>
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".json,application/json"
+            onChange={importData}
+            hidden
+          />
+        </div>
         {status && (
           <p className={`backup-status ${status.error ? 'error' : ''}`}>{status.message}</p>
         )}
-      </div>
-    </div>
+      </section>
+    </>
   )
 }
