@@ -1,8 +1,9 @@
 import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { SwipeToDelete } from '../components/SwipeToDelete'
+import { UndoToast } from '../components/UndoToast'
 import type { Store } from '../store'
 import { STATUS_LABEL } from '../types'
 import type { Ingredient, StockStatus } from '../types'
@@ -16,7 +17,16 @@ export function InventoryPage({ store }: { store: Store }) {
   const [editing, setEditing] = useState(false)
   // 왼쪽으로 밀어서 삭제 버튼이 열린 재료 (한 번에 하나만)
   const [swipedId, setSwipedId] = useState<string | null>(null)
+  // 방금 지운 재료 (실행취소용)
+  const [deleted, setDeleted] = useState<{ item: Ingredient; index: number } | null>(null)
+  const dismissUndo = useCallback(() => setDeleted(null), [])
   const sensors = useSensors(useSensor(PointerSensor))
+
+  const remove = (id: string) => {
+    setSwipedId(null)
+    const removed = store.removeIngredient(id)
+    if (removed) setDeleted(removed)
+  }
 
   // 고른 분류가 없거나 설정에서 지워졌으면 첫 분류
   const category = categories.find((c) => c.id === selectedId) ?? categories[0]
@@ -112,6 +122,7 @@ export function InventoryPage({ store }: { store: Store }) {
                         key={item.id}
                         item={item}
                         store={store}
+                        onDelete={() => remove(item.id)}
                         editing={editing}
                         swiped={swipedId === item.id}
                         onSwipedChange={(open) => setSwipedId(open ? item.id : null)}
@@ -124,6 +135,18 @@ export function InventoryPage({ store }: { store: Store }) {
           )
         })
       )}
+
+      {deleted && (
+        <UndoToast
+          key={deleted.item.id}
+          message={`'${deleted.item.name}' 삭제됨`}
+          onUndo={() => {
+            store.restoreIngredient(deleted.item, deleted.index)
+            setDeleted(null)
+          }}
+          onDismiss={dismissUndo}
+        />
+      )}
     </div>
   )
 }
@@ -131,12 +154,14 @@ export function InventoryPage({ store }: { store: Store }) {
 function IngredientRow({
   item,
   store,
+  onDelete,
   editing,
   swiped,
   onSwipedChange,
 }: {
   item: Ingredient
   store: Store
+  onDelete: () => void
   editing: boolean
   swiped: boolean
   onSwipedChange: (open: boolean) => void
@@ -161,14 +186,14 @@ function IngredientRow({
       <SwipeToDelete
         open={swiped}
         onOpenChange={onSwipedChange}
-        onDelete={() => store.removeIngredient(item.id)}
+        onDelete={onDelete}
         disabled={editing}
         label={item.name}
       >
         {editing && (
           <button
             className="delete-btn"
-            onClick={() => store.removeIngredient(item.id)}
+            onClick={onDelete}
             aria-label={`${item.name} 삭제`}
           >
             −

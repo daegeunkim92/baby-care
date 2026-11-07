@@ -73,16 +73,22 @@ export function SwipeToDelete({ open, onOpenChange, onDelete, disabled, label, c
 
   return (
     <>
-      <div className="swipe-actions" aria-hidden={!open}>
+      {/* 닫혀 있을 때는 숨겨서 둥근 모서리 사이로 빨간색이 비치지 않게 */}
+      <div
+        className="swipe-actions"
+        aria-hidden={!open}
+        style={{ visibility: offset === 0 ? 'hidden' : 'visible' }}
+      >
         <button className="swipe-delete" onClick={onDelete} aria-label={`${label} 삭제`}>
-          삭제
+          <TrashIcon />
         </button>
       </div>
       <div
         className="swipe-content"
+        // 밀어도 이름이 가려지지 않게, 옆으로 옮기지 않고 폭을 줄임
         style={{
-          transform: `translateX(${offset}px)`,
-          transition: dragX === null ? 'transform 0.2s ease' : 'none',
+          width: `calc(100% + ${offset}px)`,
+          transition: dragX === null ? 'width 0.2s ease' : 'none',
         }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -93,5 +99,26 @@ export function SwipeToDelete({ open, onOpenChange, onDelete, disabled, label, c
         {children}
       </div>
     </>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 7h16" />
+      <path d="M10 11v6M14 11v6" />
+      <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+      <path d="M9 7V4h6v3" />
+    </svg>
   )
 }

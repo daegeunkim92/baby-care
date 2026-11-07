@@ -135,8 +135,22 @@ export function useStore() {
       setData((d) => ({ ...d, ingredients: moveById(d.ingredients, activeId, overId) }))
     },
 
+    /** 지운 재료와 원래 위치를 돌려줌 (실행취소용) */
     removeIngredient(id: string) {
+      const index = data.ingredients.findIndex((i) => i.id === id)
+      if (index < 0) return null
       setData((d) => ({ ...d, ingredients: d.ingredients.filter((i) => i.id !== id) }))
+      return { item: data.ingredients[index], index }
+    },
+
+    /** 지운 재료를 원래 자리에 되돌림 */
+    restoreIngredient(item: Ingredient, index: number) {
+      setData((d) => {
+        if (d.ingredients.some((i) => i.id === item.id || i.name === item.name)) return d
+        const ingredients = [...d.ingredients]
+        ingredients.splice(Math.min(index, ingredients.length), 0, item)
+        return { ...d, ingredients }
+      })
     },
 
     addExtra(name: string) {
