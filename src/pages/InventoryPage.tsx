@@ -13,7 +13,8 @@ export function InventoryPage({ store }: { store: Store }) {
 
   const existing = new Set(ingredients.map((i) => i.name))
   const hidden = new Set(store.data.hiddenSuggestions)
-  const suggestions = SUGGESTIONS[category].filter((s) => !hidden.has(s))
+  // 이미 재고에 있는 재료는 후보에서 뺌 (재고에서 지우면 다시 나타남)
+  const suggestions = SUGGESTIONS[category].filter((s) => !hidden.has(s) && !existing.has(s))
   const hiddenInCategory = SUGGESTIONS[category].filter((s) => hidden.has(s))
 
   const submit = (e: React.FormEvent) => {
@@ -23,69 +24,67 @@ export function InventoryPage({ store }: { store: Store }) {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <h1>재료 재고</h1>
-        <button className="text-btn" onClick={() => setEditing((v) => !v)}>
-          {editing ? '완료' : '편집'}
-        </button>
-      </header>
-
-      <div className="category-tabs" role="tablist">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c}
-            role="tab"
-            aria-selected={category === c}
-            className="category-tab"
-            onClick={() => setCategory(c)}
-          >
-            {c}
+      <div className="sticky-panel">
+        <header className="page-header">
+          <h1>재료 재고</h1>
+          <button className="text-btn" onClick={() => setEditing((v) => !v)}>
+            {editing ? '완료' : '편집'}
           </button>
-        ))}
-      </div>
+        </header>
 
-      <div className="chips">
-        {suggestions.map((s) =>
-          editing ? (
+        <div className="category-tabs" role="tablist">
+          {CATEGORIES.map((c) => (
             <button
-              key={s}
-              className="chip removable"
-              onClick={() => store.hideSuggestion(s)}
-              aria-label={`${s} 후보에서 지우기`}
+              key={c}
+              role="tab"
+              aria-selected={category === c}
+              className="category-tab"
+              onClick={() => setCategory(c)}
             >
-              {s} ✕
+              {c}
             </button>
-          ) : existing.has(s) ? (
-            <span key={s} className="chip added">
-              ✓ {s}
-            </span>
-          ) : (
-            <button key={s} className="chip" onClick={() => store.addIngredient(s, category)}>
-              + {s}
-            </button>
-          ),
-        )}
-        {editing && hiddenInCategory.length > 0 && (
-          <button
-            className="chip restore"
-            onClick={() => store.restoreSuggestions(hiddenInCategory)}
-          >
-            지운 후보 {hiddenInCategory.length}개 되돌리기
-          </button>
-        )}
-      </div>
+          ))}
+        </div>
 
-      <form className="add-form" onSubmit={submit}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={`${category}에 직접 추가`}
-          enterKeyHint="done"
-        />
-        <button type="submit" className="primary-btn" disabled={!name.trim()}>
-          추가
-        </button>
-      </form>
+        <div className="chips suggestion-chips">
+          {suggestions.map((s) =>
+            editing ? (
+              <button
+                key={s}
+                className="chip removable"
+                onClick={() => store.hideSuggestion(s)}
+                aria-label={`${s} 후보에서 지우기`}
+              >
+                {s} ✕
+              </button>
+            ) : (
+              <button key={s} className="chip" onClick={() => store.addIngredient(s, category)}>
+                + {s}
+              </button>
+            ),
+          )}
+          {editing && hiddenInCategory.length > 0 && (
+            <button
+              className="chip restore"
+              onClick={() => store.restoreSuggestions(hiddenInCategory)}
+            >
+              지운 후보 {hiddenInCategory.length}개 되돌리기
+            </button>
+          )}
+        </div>
+
+        <form className="add-form" onSubmit={submit}>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={`${category}에 직접 추가`}
+            enterKeyHint="done"
+          />
+          <button type="submit" className="primary-btn" disabled={!name.trim()}>
+            추가
+          </button>
+        </form>
+      </div>
 
       {ingredients.length === 0 ? (
         <p className="empty">

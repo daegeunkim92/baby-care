@@ -235,9 +235,21 @@ select {
   margin-bottom: 10px;
 }
 
-.chip.added {
-  color: var(--muted);
-  border-style: dashed;
+/* 재고 탭 위쪽 추가 영역: 스크롤해도 상단에 고정 */
+.sticky-panel {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: calc(-1 * env(safe-area-inset-top)) -16px 0;
+  padding: env(safe-area-inset-top) 16px 2px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+/* 후보가 많아도 고정 영역이 화면을 다 차지하지 않게 3줄까지만 보이고 스크롤 */
+.suggestion-chips {
+  max-height: 118px;
+  overflow-y: auto;
 }
 
 .chip {
