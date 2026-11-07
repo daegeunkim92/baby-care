@@ -4,28 +4,32 @@ import { formatAge, formatDateLabel } from '../date'
 import { usePhotoUrl } from '../photos'
 import type { Store } from '../store'
 import { APPETITE_LABEL } from '../types'
-import type { MealRecord } from '../types'
+import type { ManualFood, MealRecord } from '../types'
 
 const sortKey = (r: MealRecord) => `${r.date}${r.time}`
 
-/** 기록 id → 그 기록에서 처음 먹은 재료들 */
-function findFirstTimes(records: MealRecord[]) {
+/** 기록 id → 그 기록에서 처음 먹은 재료들 (직접 입력한 먹어본 재료가 더 이르면 처음이 아님) */
+function findFirstTimes(records: MealRecord[], manualFoods: ManualFood[]) {
+  // 직접 입력은 그날 기록보다 앞선 것으로 봄 ('2026-11-07' < '2026-11-0708:00')
+  const events = [
+    ...manualFoods.map((f) => ({ key: f.date, names: [f.name], recordId: null })),
+    ...records.map((r) => ({ key: sortKey(r), names: r.ingredients, recordId: r.id })),
+  ].sort((a, b) => a.key.localeCompare(b.key))
   const seen = new Set<string>()
   const result = new Map<string, Set<string>>()
-  for (const r of [...records].sort((a, b) => sortKey(a).localeCompare(sortKey(b)))) {
-    const firsts = new Set(r.ingredients.filter((i) => !seen.has(i)))
-    r.ingredients.forEach((i) => seen.add(i))
-    result.set(r.id, firsts)
+  for (const e of events) {
+    if (e.recordId) result.set(e.recordId, new Set(e.names.filter((i) => !seen.has(i))))
+    e.names.forEach((i) => seen.add(i))
   }
   return result
 }
 
 export function RecordsPage({ store }: { store: Store }) {
-  const { records, baby } = store.data
+  const { records, baby, manualFoods } = store.data
   // null: 닫힘, 'new': 새 기록, 그 외: 수정할 기록
   const [editing, setEditing] = useState<MealRecord | 'new' | null>(null)
 
-  const firstTimes = findFirstTimes(records)
+  const firstTimes = findFirstTimes(records, manualFoods)
   const sorted = [...records].sort((a, b) => sortKey(b).localeCompare(sortKey(a)))
   const days: { date: string; items: MealRecord[] }[] = []
   for (const r of sorted) {

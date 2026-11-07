@@ -982,3 +982,29 @@ textarea.text-input {
   line-height: 1.4;
   text-align: right;
 }
+
+.manual-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.manual-form h3 {
+  margin: 0;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.danger-text {
+  color: var(--out);
+}
+
+.food-row .row-link {
+  gap: 10px;
+}

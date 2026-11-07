@@ -68,6 +68,16 @@ export interface BabyInfo {
   birthDate: string
 }
 
+/** 기록 없이 직접 입력한 먹어본 재료 (앱을 쓰기 전에 먹여본 재료 등) */
+export interface ManualFood {
+  id: string
+  name: string
+  /** 처음 먹은 날 (YYYY-MM-DD) */
+  date: string
+  reaction: boolean
+  memo: string
+}
+
 export interface AppData {
   version: 2
   /** 처음 실행할 때 입력 (없으면 입력 화면을 띄움) */
@@ -76,6 +86,7 @@ export interface AppData {
   ingredients: Ingredient[]
   extras: ExtraItem[]
   records: MealRecord[]
+  manualFoods: ManualFood[]
 }
 
 /** 처음 시작할 때의 기본 분류와 후보 재료 */

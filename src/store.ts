@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react'
 import { deletePhoto, replaceAllPhotos } from './photos'
 import { DEFAULT_CATEGORIES } from './types'
-import type { AppData, BabyInfo, Category, Ingredient, MealRecord, StockStatus } from './types'
+import type {
+  AppData,
+  BabyInfo,
+  Category,
+  Ingredient,
+  ManualFood,
+  MealRecord,
+  StockStatus,
+} from './types'
 
 const STORAGE_KEY = 'baby-care:data'
 
@@ -15,13 +23,19 @@ function initialData(): AppData {
     ingredients: [],
     extras: [],
     records: [],
+    manualFoods: [],
   }
 }
 
 /** 저장된 데이터나 백업 파일을 현재 형식(version 2)으로 변환. 형식이 맞지 않으면 null */
 function migrate(raw: any): AppData | null {
   if (!Array.isArray(raw?.ingredients) || !Array.isArray(raw?.records)) return null
-  const rest = { baby: raw.baby ?? null, extras: raw.extras ?? [], records: raw.records }
+  const rest = {
+    baby: raw.baby ?? null,
+    extras: raw.extras ?? [],
+    records: raw.records,
+    manualFoods: raw.manualFoods ?? [],
+  }
 
   if (raw.version === 2 && Array.isArray(raw.categories)) {
     return { version: 2, categories: raw.categories, ingredients: raw.ingredients, ...rest }
@@ -140,9 +154,7 @@ export function useStore() {
     toggleIngredientCart(id: string) {
       setData((d) => ({
         ...d,
-        ingredients: d.ingredients.map((i) =>
-          i.id === id ? { ...i, inCart: !i.inCart } : i,
-        ),
+        ingredients: d.ingredients.map((i) => (i.id === id ? { ...i, inCart: !i.inCart } : i)),
       }))
     },
 
@@ -206,6 +218,24 @@ export function useStore() {
 
     setBaby(baby: BabyInfo) {
       setData((d) => ({ ...d, baby }))
+    },
+
+    /** 같은 이름이 이미 있으면 false. id가 있으면 수정, 없으면 추가 */
+    saveManualFood(food: Omit<ManualFood, 'id'> & { id?: string }) {
+      const name = food.name.trim()
+      if (!name || data.manualFoods.some((f) => f.id !== food.id && f.name === name)) return false
+      const saved = { ...food, name, memo: food.memo.trim(), id: food.id ?? newId() }
+      setData((d) => ({
+        ...d,
+        manualFoods: food.id
+          ? d.manualFoods.map((f) => (f.id === food.id ? saved : f))
+          : [...d.manualFoods, saved],
+      }))
+      return true
+    },
+
+    removeManualFood(id: string) {
+      setData((d) => ({ ...d, manualFoods: d.manualFoods.filter((f) => f.id !== id) }))
     },
 
     /** 모든 데이터와 사진을 지우고 처음 상태로 */
