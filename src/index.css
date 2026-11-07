@@ -304,17 +304,6 @@ select {
   font-size: 17px;
 }
 
-.delete-btn {
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--out);
-  color: #fff;
-  font-weight: 700;
-  line-height: 22px;
-}
-
 .icon-btn {
   width: 32px;
   height: 32px;
@@ -780,6 +769,10 @@ textarea.text-input {
   position: relative;
   padding: 0;
   overflow: hidden;
+  /* 길게 누를 때 아이폰의 텍스트 선택·메뉴가 뜨지 않게 */
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .swipe-content {

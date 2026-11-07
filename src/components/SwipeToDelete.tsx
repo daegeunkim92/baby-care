@@ -33,7 +33,8 @@ export function SwipeToDelete({ open, onOpenChange, onDelete, disabled, label, c
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!start.current) return
+    // 길게 눌러 순서를 바꾸는 중이면 밀기는 멈춤
+    if (!start.current || disabled) return
     const dx = e.clientX - start.current.x
     const dy = e.clientY - start.current.y
     if (!direction.current) {
