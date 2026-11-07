@@ -10,11 +10,25 @@ import type { Ingredient, StockStatus } from '../types'
 
 const STATUSES: StockStatus[] = ['plenty', 'low', 'out']
 
+// 재료 추가 영역을 펼쳐 둘지 (이 기기에서만 기억하는 화면 설정)
+const ADD_OPEN_KEY = 'baby-care:inventory-add-open'
+
+function loadAddOpen(hasIngredients: boolean) {
+  try {
+    const saved = localStorage.getItem(ADD_OPEN_KEY)
+    // 처음엔 재료가 없으면 펼치고, 있으면 접어 둠
+    return saved === null ? !hasIngredients : saved === 'true'
+  } catch {
+    return !hasIngredients
+  }
+}
+
 export function InventoryPage({ store }: { store: Store }) {
   const { ingredients, categories } = store.data
   const [name, setName] = useState('')
   const [selectedId, setSelectedId] = useState<string>()
   const [editing, setEditing] = useState(false)
+  const [addOpen, setAddOpen] = useState(() => loadAddOpen(ingredients.length > 0))
   // 왼쪽으로 밀어서 삭제 버튼이 열린 재료 (한 번에 하나만)
   const [swipedId, setSwipedId] = useState<string | null>(null)
   // 방금 지운 재료 (실행취소용)
@@ -40,19 +54,34 @@ export function InventoryPage({ store }: { store: Store }) {
     if (category && store.addIngredient(name, category.id)) setName('')
   }
 
+  const toggleAdd = () => {
+    const next = !addOpen
+    setAddOpen(next)
+    try {
+      localStorage.setItem(ADD_OPEN_KEY, String(next))
+    } catch {
+      // 저장 못 해도 이번 화면에서는 동작함
+    }
+  }
+
   return (
     <div className="page">
       <div className="sticky-panel">
         <header className="page-header">
           <h1>재료 재고</h1>
-          {ingredients.length > 0 && (
-            <button className="text-btn" onClick={() => setEditing((v) => !v)}>
-              {editing ? '완료' : '편집'}
+          <div className="header-actions">
+            <button className="text-btn" onClick={toggleAdd} aria-expanded={addOpen}>
+              {addOpen ? '추가 접기 ▴' : '재료 추가 ▾'}
             </button>
-          )}
+            {ingredients.length > 0 && (
+              <button className="text-btn" onClick={() => setEditing((v) => !v)}>
+                {editing ? '완료' : '편집'}
+              </button>
+            )}
+          </div>
         </header>
 
-        {category ? (
+        {!addOpen ? null : category ? (
           <>
             <div className="category-tabs" role="tablist">
               {categories.map((c) => (
@@ -71,7 +100,11 @@ export function InventoryPage({ store }: { store: Store }) {
             {suggestions.length > 0 && (
               <div className="chips suggestion-chips">
                 {suggestions.map((s) => (
-                  <button key={s} className="chip" onClick={() => store.addIngredient(s, category.id)}>
+                  <button
+                    key={s}
+                    className="chip"
+                    onClick={() => store.addIngredient(s, category.id)}
+                  >
                     + {s}
                   </button>
                 ))}
@@ -97,7 +130,9 @@ export function InventoryPage({ store }: { store: Store }) {
 
       {ingredients.length === 0 ? (
         <p className="empty">
-          집에 있는 이유식 재료를 추가해 보세요.
+          {addOpen
+            ? '집에 있는 이유식 재료를 추가해 보세요.'
+            : "위의 '재료 추가'를 눌러 재료를 넣어 보세요."}
           <br />
           부족해지면 '조금'이나 '없음'으로 바꾸면 장보기 목록에 자동으로 올라가요.
         </p>
@@ -191,11 +226,7 @@ function IngredientRow({
         label={item.name}
       >
         {editing && (
-          <button
-            className="delete-btn"
-            onClick={onDelete}
-            aria-label={`${item.name} 삭제`}
-          >
+          <button className="delete-btn" onClick={onDelete} aria-label={`${item.name} 삭제`}>
             −
           </button>
         )}

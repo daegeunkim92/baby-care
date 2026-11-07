@@ -208,6 +208,11 @@ select {
   font-size: 17px;
 }
 
+.header-actions {
+  display: flex;
+  gap: 16px;
+}
+
 /* 분류 선택: 가로 스크롤 */
 .category-tabs {
   display: flex;
