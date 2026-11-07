@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { deletePhoto } from './photos'
 import { DEFAULT_CATEGORIES } from './types'
 import type { AppData, Category, Ingredient, MealRecord, StockStatus } from './types'
 
@@ -55,10 +56,22 @@ function load(): AppData {
   }
 }
 
-/** 백업 파일 내용을 검사해서 AppData로 변환. 형식이 맞지 않으면 null */
-export function parseBackup(text: string): AppData | null {
+/** 백업 파일 형식: 앱 데이터 + 사진 (사진 id → data URL) */
+export interface Backup {
+  data: AppData
+  photos: Record<string, string>
+}
+
+export function serializeBackup({ data, photos }: Backup) {
+  return JSON.stringify({ ...data, photos })
+}
+
+/** 백업 파일 내용을 검사해서 변환. 형식이 맞지 않으면 null */
+export function parseBackup(text: string): Backup | null {
   try {
-    return migrate(JSON.parse(text))
+    const raw = JSON.parse(text)
+    const data = migrate(raw)
+    return data && { data, photos: raw.photos ?? {} }
   } catch {
     return null
   }
@@ -254,6 +267,8 @@ export function useStore() {
     },
 
     removeRecord(id: string) {
+      const photoId = data.records.find((r) => r.id === id)?.photoId
+      if (photoId) deletePhoto(photoId).catch(() => {})
       setData((d) => ({ ...d, records: d.records.filter((r) => r.id !== id) }))
     },
   }

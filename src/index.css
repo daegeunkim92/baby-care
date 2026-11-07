@@ -845,3 +845,47 @@ textarea.text-input {
     transform: translateY(8px);
   }
 }
+
+/* ---------- 사진 ---------- */
+
+.photo-add {
+  height: 88px;
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.photo-preview img {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.photo-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.record {
+  display: flex;
+  gap: 12px;
+}
+
+.record-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.record-thumb {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  background: var(--seg-bg);
+  object-fit: cover;
+}

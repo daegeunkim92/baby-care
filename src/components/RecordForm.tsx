@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { guessMeal, toDateStr, toTimeStr } from '../date'
+import { deletePhoto, putPhoto, resizeImage, usePhotoUrl } from '../photos'
 import type { Store } from '../store'
 import { APPETITE_LABEL, MEALS } from '../types'
 import type { Appetite, MealRecord } from '../types'
@@ -26,12 +27,25 @@ function initialDraft(record?: MealRecord) {
     appetite: null as Appetite | null,
     reaction: false,
     memo: '',
+    photoId: null as string | null | undefined,
   }
 }
+
+/** 저장 전까지의 사진 변경: 그대로 / 새 사진 / 삭제 */
+type PhotoEdit = { kind: 'keep' } | { kind: 'new'; blob: Blob; url: string } | { kind: 'removed' }
 
 export function RecordForm({ store, record, onClose }: Props) {
   const [draft, setDraft] = useState(() => initialDraft(record))
   const [custom, setCustom] = useState('')
+  const [photo, setPhoto] = useState<PhotoEdit>({ kind: 'keep' })
+  const [saving, setSaving] = useState(false)
+  const photoInput = useRef<HTMLInputElement>(null)
+  const savedPhotoUrl = usePhotoUrl(photo.kind === 'keep' ? draft.photoId : null)
+  const photoUrl = photo.kind === 'new' ? photo.url : savedPhotoUrl
+
+  // 새로 고른 사진의 미리보기 URL은 바뀌거나 화면을 닫을 때 해제
+  const newPhotoUrl = photo.kind === 'new' ? photo.url : null
+  useEffect(() => () => void (newPhotoUrl && URL.revokeObjectURL(newPhotoUrl)), [newPhotoUrl])
   const set = <K extends keyof typeof draft>(key: K, value: (typeof draft)[K]) =>
     setDraft((d) => ({ ...d, [key]: value }))
 
@@ -62,13 +76,41 @@ export function RecordForm({ store, record, onClose }: Props) {
 
   const canSave = draft.menu.trim() !== '' || draft.ingredients.length > 0
 
-  const save = () => {
+  const pickPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // 같은 사진을 다시 골라도 동작하게
+    if (!file) return
+    try {
+      const blob = await resizeImage(file)
+      setPhoto({ kind: 'new', blob, url: URL.createObjectURL(blob) })
+    } catch {
+      alert('사진을 불러오지 못했어요.')
+    }
+  }
+
+  const save = async () => {
+    setSaving(true)
+    let photoId = draft.photoId ?? null
+    try {
+      if (photo.kind !== 'keep' && photoId) {
+        await deletePhoto(photoId)
+        photoId = null
+      }
+      if (photo.kind === 'new') {
+        photoId = crypto.randomUUID()
+        await putPhoto(photoId, photo.blob)
+      }
+    } catch {
+      alert('사진을 저장하지 못했어요. 기록은 사진 없이 저장돼요.')
+      photoId = null
+    }
     const amount = parseFloat(draft.amount)
     store.saveRecord({
       ...draft,
       menu: draft.menu.trim(),
       memo: draft.memo.trim(),
       amount: Number.isFinite(amount) ? amount : null,
+      photoId,
     })
     onClose()
   }
@@ -91,7 +133,7 @@ export function RecordForm({ store, record, onClose }: Props) {
           취소
         </button>
         <h2>{record ? '기록 수정' : '새 기록'}</h2>
-        <button className="text-btn strong" onClick={save} disabled={!canSave}>
+        <button className="text-btn strong" onClick={save} disabled={!canSave || saving}>
           저장
         </button>
       </header>
@@ -148,6 +190,29 @@ export function RecordForm({ store, record, onClose }: Props) {
               ))}
             </div>
           )}
+        </section>
+
+        <section className="field-group">
+          <h3>사진</h3>
+          {photoUrl ? (
+            <div className="photo-preview">
+              <img src={photoUrl} alt="이유식 사진" />
+              <div className="photo-actions">
+                <button className="chip" onClick={() => photoInput.current?.click()}>
+                  사진 바꾸기
+                </button>
+                <button className="chip removable" onClick={() => setPhoto({ kind: 'removed' })}>
+                  사진 삭제
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button className="photo-add" onClick={() => photoInput.current?.click()}>
+              📷 사진 추가
+            </button>
+          )}
+          {/* capture를 안 붙여서 아이폰에서 '사진 찍기 / 사진 보관함' 중에 고를 수 있음 */}
+          <input ref={photoInput} type="file" accept="image/*" onChange={pickPhoto} hidden />
         </section>
 
         <section className="field-group">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { RecordForm } from '../components/RecordForm'
 import { formatDateLabel } from '../date'
+import { usePhotoUrl } from '../photos'
 import type { Store } from '../store'
 import { APPETITE_LABEL } from '../types'
 import type { MealRecord } from '../types'
@@ -61,33 +62,36 @@ export function RecordsPage({ store }: { store: Store }) {
                       className={`record ${r.reaction ? 'has-reaction' : ''}`}
                       onClick={() => setEditing(r)}
                     >
-                      <div className="record-top">
-                        <span className="record-meal">{r.meal}</span>
-                        <span className="record-time">{r.time}</span>
-                        <span className="record-menu">{r.menu || r.ingredients.join(', ')}</span>
+                      <div className="record-body">
+                        <div className="record-top">
+                          <span className="record-meal">{r.meal}</span>
+                          <span className="record-time">{r.time}</span>
+                          <span className="record-menu">{r.menu || r.ingredients.join(', ')}</span>
+                        </div>
+                        {r.ingredients.length > 0 && (
+                          <div className="record-ingredients">
+                            {r.ingredients.map((i) => (
+                              <span key={i} className={firsts?.has(i) ? 'first' : ''}>
+                                {firsts?.has(i) && '🆕 '}
+                                {i}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {(r.amount !== null || r.appetite) && (
+                          <div className="record-meta">
+                            {r.amount !== null && <span>{r.amount}g</span>}
+                            {r.appetite && <span>{APPETITE_LABEL[r.appetite]}</span>}
+                          </div>
+                        )}
+                        {(r.reaction || r.memo) && (
+                          <p className="record-memo">
+                            {r.reaction && '⚠️ '}
+                            {r.memo || '이상 반응'}
+                          </p>
+                        )}
                       </div>
-                      {r.ingredients.length > 0 && (
-                        <div className="record-ingredients">
-                          {r.ingredients.map((i) => (
-                            <span key={i} className={firsts?.has(i) ? 'first' : ''}>
-                              {firsts?.has(i) && '🆕 '}
-                              {i}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {(r.amount !== null || r.appetite) && (
-                        <div className="record-meta">
-                          {r.amount !== null && <span>{r.amount}g</span>}
-                          {r.appetite && <span>{APPETITE_LABEL[r.appetite]}</span>}
-                        </div>
-                      )}
-                      {(r.reaction || r.memo) && (
-                        <p className="record-memo">
-                          {r.reaction && '⚠️ '}
-                          {r.memo || '이상 반응'}
-                        </p>
-                      )}
+                      {r.photoId && <RecordThumb photoId={r.photoId} />}
                     </button>
                   </li>
                 )
@@ -106,4 +110,9 @@ export function RecordsPage({ store }: { store: Store }) {
       )}
     </div>
   )
+}
+
+function RecordThumb({ photoId }: { photoId: string }) {
+  const url = usePhotoUrl(photoId)
+  return url ? <img className="record-thumb" src={url} alt="" /> : <span className="record-thumb" />
 }

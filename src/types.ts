@@ -58,6 +58,8 @@ export interface MealRecord {
   /** 알레르기 등 이상 반응 여부 */
   reaction: boolean
   memo: string
+  /** IndexedDB에 저장된 사진 id (사진은 기록당 1장) */
+  photoId?: string | null
 }
 
 export interface AppData {
