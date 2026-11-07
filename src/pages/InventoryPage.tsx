@@ -13,10 +13,13 @@ const STATUSES: StockStatus[] = ['plenty', 'low', 'out']
 export function InventoryPage({ store }: { store: Store }) {
   const { ingredients, categories } = store.data
   const [name, setName] = useState('')
-  const [selectedId, setSelectedId] = useState<string>()
+  // 처음 고른 분류를 id로 기억 (순서를 바꿔도 선택이 다른 분류로 옮겨가지 않게)
+  const [selectedId, setSelectedId] = useState(() => categories[0]?.id)
   const [editing, setEditing] = useState(false)
   // 재료 추가 영역은 처음엔 항상 접어 둠
   const [addOpen, setAddOpen] = useState(false)
+  // 편집 중에는 분류 순서를 바꿀 수 있게 추가 영역을 항상 펼침
+  const panelOpen = addOpen || editing
   // 방금 추가한 재료 (그 줄로 스크롤하고 잠깐 강조)
   const [addedId, setAddedId] = useState<string | null>(null)
   // 방금 지운 재료 (실행취소용)
@@ -62,18 +65,17 @@ export function InventoryPage({ store }: { store: Store }) {
       <div className="sticky-panel">
         <header className="page-header">
           <h1>재료 재고</h1>
-          {ingredients.length > 0 && (
-            <button className="text-btn" onClick={() => setEditing((v) => !v)}>
-              {editing ? '완료' : '편집'}
-            </button>
-          )}
+          <button className="text-btn" onClick={() => setEditing((v) => !v)}>
+            {editing ? '완료' : '편집'}
+          </button>
         </header>
 
-        {!addOpen ? null : category ? (
+        {!panelOpen ? null : category ? (
           <>
             <CategoryTabs
               categories={categories}
               selectedId={category.id}
+              editable={editing}
               onSelect={setSelectedId}
               onMove={store.moveCategory}
             />
@@ -104,28 +106,30 @@ export function InventoryPage({ store }: { store: Store }) {
           <p className="empty">재료 분류가 없어요.</p>
         )}
 
-        {/* 헤더와 목록 사이의 접기/펼치기 손잡이 */}
-        <button
-          className="collapse-toggle"
-          onClick={() => setAddOpen((v) => !v)}
-          aria-expanded={addOpen}
-          aria-label={addOpen ? '재료 추가 접기' : '재료 추가 펼치기'}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            className={addOpen ? 'open' : ''}
+        {/* 헤더와 목록 사이의 접기/펼치기 손잡이 (편집 중엔 항상 펼침) */}
+        {!editing && (
+          <button
+            className="collapse-toggle"
+            onClick={() => setAddOpen((v) => !v)}
+            aria-expanded={addOpen}
+            aria-label={addOpen ? '재료 추가 접기' : '재료 추가 펼치기'}
           >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className={addOpen ? 'open' : ''}
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {ingredients.length === 0 ? (
