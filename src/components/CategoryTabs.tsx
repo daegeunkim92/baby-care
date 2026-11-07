@@ -1,4 +1,5 @@
 import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { restrictToFirstScrollableAncestor, restrictToHorizontalAxis } from '@dnd-kit/modifiers'
 import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Category } from '../types'
@@ -21,6 +22,8 @@ export function CategoryTabs({ categories, selectedId, editable, onSelect, onMov
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
+      // 탭 목록 밖으로 못 나가게: 끝을 넘어가면 스크롤할 폭이 계속 늘어나 끝없이 스크롤됐음
+      modifiers={[restrictToHorizontalAxis, restrictToFirstScrollableAncestor]}
       onDragEnd={({ active, over }) => over && onMove(String(active.id), String(over.id))}
     >
       <SortableContext items={categories} strategy={horizontalListSortingStrategy}>
@@ -61,7 +64,7 @@ function CategoryTab({
       aria-selected={selected && !editable}
       className={`category-tab ${editable ? 'editable' : ''} ${isDragging ? 'dragging' : ''}`}
       // 위치만 옮기고 크기(scale)는 바꾸지 않음: 폭이 다른 탭끼리 바뀔 때 늘었다 줄었다 하지 않게
-      style={{ transform: CSS.Translate.toString(transform && { ...transform, y: 0 }), transition }}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
       onClick={editable ? undefined : onSelect}
     >
       {category.name}
