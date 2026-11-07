@@ -8,7 +8,7 @@ type Tab = 'records' | 'inventory' | 'shopping'
 
 function App() {
   const store = useStore()
-  const [tab, setTab] = useState<Tab>('records')
+  const [tab, setTab] = useState<Tab>('inventory')
   const toBuyCount = store.data.ingredients.filter((i) => i.status !== 'plenty').length
 
   return (
@@ -20,16 +20,16 @@ function App() {
       </main>
 
       <nav className="tab-bar">
-        <button className={tab === 'records' ? 'active' : ''} onClick={() => setTab('records')}>
-          <span className="tab-icon">🥣</span>
-          기록
-        </button>
         <button
           className={tab === 'inventory' ? 'active' : ''}
           onClick={() => setTab('inventory')}
         >
           <span className="tab-icon">🥕</span>
           재고
+        </button>
+        <button className={tab === 'records' ? 'active' : ''} onClick={() => setTab('records')}>
+          <span className="tab-icon">🥣</span>
+          기록
         </button>
         <button
           className={tab === 'shopping' ? 'active' : ''}
