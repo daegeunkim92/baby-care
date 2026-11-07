@@ -108,10 +108,12 @@ export function useStore() {
   return {
     data,
 
+    /** 추가한 재료의 id를 돌려줌 (이미 있거나 이름이 비면 null) */
     addIngredient(name: string, categoryId: string) {
       const trimmed = name.trim()
-      if (!trimmed) return false
-      if (data.ingredients.some((i) => i.name === trimmed)) return false
+      if (!trimmed) return null
+      if (data.ingredients.some((i) => i.name === trimmed)) return null
+      const id = newId()
       const isSuggested = data.categories.some((c) => c.suggestions.includes(trimmed))
       setData((d) => ({
         ...d,
@@ -123,10 +125,10 @@ export function useStore() {
             ),
         ingredients: [
           ...d.ingredients,
-          { id: newId(), name: trimmed, categoryId, status: 'plenty', inCart: false },
+          { id, name: trimmed, categoryId, status: 'plenty', inCart: false },
         ],
       }))
-      return true
+      return id
     },
 
     setStatus(id: string, status: StockStatus) {
@@ -197,57 +199,8 @@ export function useStore() {
       }))
     },
 
-    addCategory(name: string) {
-      const trimmed = name.trim()
-      if (!trimmed || data.categories.some((c) => c.name === trimmed)) return false
-      setData((d) => ({
-        ...d,
-        categories: [...d.categories, { id: newId(), name: trimmed, suggestions: [] }],
-      }))
-      return true
-    },
-
-    renameCategory(id: string, name: string) {
-      const trimmed = name.trim()
-      if (!trimmed || data.categories.some((c) => c.id !== id && c.name === trimmed)) return false
-      setData((d) => ({
-        ...d,
-        categories: d.categories.map((c) => (c.id === id ? { ...c, name: trimmed } : c)),
-      }))
-      return true
-    },
-
-    /** 재고에 이 분류 재료가 남아 있으면 지우지 않고 그 개수를 돌려줌 (0이면 삭제됨) */
-    removeCategory(id: string) {
-      const inStock = data.ingredients.filter((i) => i.categoryId === id).length
-      if (inStock > 0) return inStock
-      setData((d) => ({ ...d, categories: d.categories.filter((c) => c.id !== id) }))
-      return 0
-    },
-
     moveCategory(activeId: string, overId: string) {
       setData((d) => ({ ...d, categories: moveById(d.categories, activeId, overId) }))
-    },
-
-    addSuggestion(categoryId: string, name: string) {
-      const trimmed = name.trim()
-      if (!trimmed || data.categories.some((c) => c.suggestions.includes(trimmed))) return false
-      setData((d) => ({
-        ...d,
-        categories: d.categories.map((c) =>
-          c.id === categoryId ? { ...c, suggestions: [...c.suggestions, trimmed] } : c,
-        ),
-      }))
-      return true
-    },
-
-    removeSuggestion(categoryId: string, name: string) {
-      setData((d) => ({
-        ...d,
-        categories: d.categories.map((c) =>
-          c.id === categoryId ? { ...c, suggestions: c.suggestions.filter((s) => s !== name) } : c,
-        ),
-      }))
     },
 
     /** 백업 불러오기: 현재 데이터를 통째로 바꿈 */

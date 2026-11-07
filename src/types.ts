@@ -6,7 +6,7 @@ export const STATUS_LABEL: Record<StockStatus, string> = {
   out: '없음',
 }
 
-/** 재료 분류 (곡류, 채소 …). 설정 탭에서 추가·이름 변경·삭제·순서 변경 */
+/** 재료 분류 (곡류, 채소 …). 재고 탭에서 길게 눌러 순서 변경 */
 export interface Category {
   id: string
   name: string
