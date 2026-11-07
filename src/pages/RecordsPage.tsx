@@ -38,8 +38,8 @@ export function RecordsPage({ store }: { store: Store }) {
     <div className="page">
       <header className="page-header">
         <h1>이유식 기록</h1>
-        <button className="primary-btn" onClick={() => setEditing('new')}>
-          + 기록
+        <button className="text-btn" onClick={() => setEditing('new')}>
+          + 기록 추가
         </button>
       </header>
 
@@ -47,7 +47,7 @@ export function RecordsPage({ store }: { store: Store }) {
         <p className="empty">
           아직 기록이 없어요.
           <br />
-          '+ 기록'을 눌러 오늘 먹인 이유식을 남겨보세요.
+          '+ 기록 추가'를 눌러 오늘 먹인 이유식을 남겨보세요.
         </p>
       ) : (
         days.map(({ date, items }) => (

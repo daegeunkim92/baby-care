@@ -1,15 +1,7 @@
-import {
-  closestCenter,
-  DndContext,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
+import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useCallback, useState } from 'react'
-import { SwipeToDelete } from '../components/SwipeToDelete'
 import { UndoToast } from '../components/UndoToast'
 import type { Store } from '../store'
 import { STATUS_LABEL } from '../types'
@@ -34,18 +26,14 @@ export function InventoryPage({ store }: { store: Store }) {
   const { ingredients, categories } = store.data
   const [name, setName] = useState('')
   const [selectedId, setSelectedId] = useState<string>()
+  const [editing, setEditing] = useState(false)
   const [addOpen, setAddOpen] = useState(() => loadAddOpen(ingredients.length > 0))
-  // 왼쪽으로 밀어서 삭제 버튼이 열린 재료 (한 번에 하나만)
-  const [swipedId, setSwipedId] = useState<string | null>(null)
   // 방금 지운 재료 (실행취소용)
   const [deleted, setDeleted] = useState<{ item: Ingredient; index: number } | null>(null)
   const dismissUndo = useCallback(() => setDeleted(null), [])
-  // 길게 누르면(0.4초) 끌어서 순서 바꾸기. 그 전에 움직이면 스크롤이나 밀어서 삭제로 처리
-  const longPress = { activationConstraint: { delay: 400, tolerance: 6 } }
-  const sensors = useSensors(useSensor(TouchSensor, longPress), useSensor(MouseSensor, longPress))
+  const sensors = useSensors(useSensor(PointerSensor))
 
   const remove = (id: string) => {
-    setSwipedId(null)
     const removed = store.removeIngredient(id)
     if (removed) setDeleted(removed)
   }
@@ -77,11 +65,11 @@ export function InventoryPage({ store }: { store: Store }) {
       <div className="sticky-panel">
         <header className="page-header">
           <h1>재료 재고</h1>
-          <div className="header-actions">
-            <button className="text-btn" onClick={toggleAdd} aria-expanded={addOpen}>
-              {addOpen ? '추가 접기 ▴' : '재료 추가 ▾'}
+          {ingredients.length > 0 && (
+            <button className="text-btn" onClick={() => setEditing((v) => !v)}>
+              {editing ? '완료' : '편집'}
             </button>
-          </div>
+          )}
         </header>
 
         {!addOpen ? null : category ? (
@@ -129,13 +117,34 @@ export function InventoryPage({ store }: { store: Store }) {
         ) : (
           <p className="empty">설정 탭에서 재료 분류를 먼저 추가해 주세요.</p>
         )}
+
+        {/* 헤더와 목록 사이의 접기/펼치기 손잡이 */}
+        <button
+          className="collapse-toggle"
+          onClick={toggleAdd}
+          aria-expanded={addOpen}
+          aria-label={addOpen ? '재료 추가 접기' : '재료 추가 펼치기'}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className={addOpen ? 'open' : ''}
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
       </div>
 
       {ingredients.length === 0 ? (
         <p className="empty">
-          {addOpen
-            ? '집에 있는 이유식 재료를 추가해 보세요.'
-            : "위의 '재료 추가'를 눌러 재료를 넣어 보세요."}
+          {addOpen ? '집에 있는 이유식 재료를 추가해 보세요.' : '위의 ▾를 눌러 재료를 넣어 보세요.'}
           <br />
           부족해지면 '조금'이나 '없음'으로 바꾸면 장보기 목록에 자동으로 올라가요.
         </p>
@@ -161,8 +170,7 @@ export function InventoryPage({ store }: { store: Store }) {
                         item={item}
                         store={store}
                         onDelete={() => remove(item.id)}
-                        swiped={swipedId === item.id}
-                        onSwipedChange={(open) => setSwipedId(open ? item.id : null)}
+                        editing={editing}
                       />
                     ))}
                   </SortableContext>
@@ -192,33 +200,47 @@ function IngredientRow({
   item,
   store,
   onDelete,
-  swiped,
-  onSwipedChange,
+  editing,
 }: {
   item: Ingredient
   store: Store
   onDelete: () => void
-  swiped: boolean
-  onSwipedChange: (open: boolean) => void
+  editing: boolean
 }) {
-  const { listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id, disabled: !editing })
 
   return (
     <li
       ref={setNodeRef}
-      className={`row swipe-row ${isDragging ? 'dragging' : ''}`}
+      className={`row ${isDragging ? 'dragging' : ''}`}
       // 세로로만 움직이게 x 이동은 무시
       style={{ transform: CSS.Transform.toString(transform && { ...transform, x: 0 }), transition }}
-      {...listeners}
     >
-      <SwipeToDelete
-        open={swiped}
-        onOpenChange={onSwipedChange}
-        onDelete={onDelete}
-        disabled={isDragging}
-        label={item.name}
-      >
-        <span className="row-name">{item.name}</span>
+      {editing && (
+        <button className="delete-btn" onClick={onDelete} aria-label={`${item.name} 삭제`}>
+          −
+        </button>
+      )}
+      <span className="row-name">{item.name}</span>
+      {editing ? (
+        <button
+          ref={setActivatorNodeRef}
+          className="drag-handle"
+          aria-label={`${item.name} 순서 바꾸기`}
+          {...attributes}
+          {...listeners}
+        >
+          ☰
+        </button>
+      ) : (
         <div className="segmented" role="radiogroup">
           {STATUSES.map((s) => (
             <button
@@ -232,7 +254,7 @@ function IngredientRow({
             </button>
           ))}
         </div>
-      </SwipeToDelete>
+      )}
     </li>
   )
 }

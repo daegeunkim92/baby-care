@@ -210,11 +210,6 @@ select {
   font-size: 17px;
 }
 
-.header-actions {
-  display: flex;
-  gap: 16px;
-}
-
 /* 분류 선택: 가로 스크롤 */
 .category-tabs {
   display: flex;
@@ -253,9 +248,27 @@ select {
   top: 0;
   z-index: 5;
   margin: calc(-1 * env(safe-area-inset-top)) -16px 0;
-  padding: env(safe-area-inset-top) 16px 2px;
+  padding: env(safe-area-inset-top) 16px 0;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
+}
+
+/* 고정 영역 아래쪽의 접기/펼치기 손잡이 */
+.collapse-toggle {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 28px;
+  align-items: center;
+  color: var(--muted);
+}
+
+.collapse-toggle svg {
+  transition: transform 0.2s ease;
+}
+
+.collapse-toggle svg.open {
+  transform: rotate(180deg);
 }
 
 /* 후보가 많아도 고정 영역이 화면을 다 차지하지 않게 3줄까지만 보이고 스크롤 */
@@ -302,6 +315,17 @@ select {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 17px;
+}
+
+.delete-btn {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--out);
+  color: #fff;
+  font-weight: 700;
+  line-height: 22px;
 }
 
 .icon-btn {
@@ -761,49 +785,6 @@ textarea.text-input {
 .title-input {
   width: 100%;
   font-size: 17px;
-}
-
-/* ---------- 왼쪽으로 밀어서 삭제 ---------- */
-
-.row.swipe-row {
-  position: relative;
-  padding: 0;
-  overflow: hidden;
-  /* 길게 누를 때 아이폰의 텍스트 선택·메뉴가 뜨지 않게 */
-  -webkit-touch-callout: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.swipe-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  min-height: 52px;
-  padding: 0 12px;
-  background: var(--card);
-  /* 세로 스크롤은 브라우저가, 가로 밀기는 앱이 처리 */
-  touch-action: pan-y;
-}
-
-.swipe-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-}
-
-.swipe-delete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  background: var(--out);
-  color: #fff;
 }
 
 /* ---------- 실행취소 알림 ---------- */
