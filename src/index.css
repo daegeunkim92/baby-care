@@ -241,11 +241,6 @@ select {
   color: var(--bg);
 }
 
-/* 편집 모드: 누른 채 끌면 바로 옮겨지도록 브라우저 스크롤을 막음 */
-.category-tab.editable {
-  touch-action: none;
-}
-
 /* 끌고 있는 분류: 테두리만 (안쪽 그림자라 크기는 그대로) */
 .category-tab.dragging {
   position: relative;
@@ -255,9 +250,14 @@ select {
 
 /* 편집 모드에서 순서를 바꿀 수 있다는 표시 (재료 목록의 ☰와 같은 아이콘) */
 .tab-reorder-icon {
+  /* 손가락으로 잡기 쉽게 누르는 영역을 넓힘 (바깥 여백으로 상쇄해서 탭 크기는 그대로) */
+  margin: -8px -14px -8px -6px;
+  padding: 8px 14px 8px 6px;
   font-size: 14px;
   font-weight: 400;
   opacity: 0.6;
+  /* 손잡이를 잡았을 때는 스크롤 대신 끌기 */
+  touch-action: none;
 }
 
 .chips {
