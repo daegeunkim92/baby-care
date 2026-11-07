@@ -68,6 +68,8 @@ export interface AppData {
   ingredients: Ingredient[]
   extras: ExtraItem[]
   records: MealRecord[]
+  /** 빠른 추가 후보에서 사용자가 지운 재료 이름 */
+  hiddenSuggestions: string[]
 }
 
 /** 빠른 추가용 자주 쓰는 이유식 재료 (분류별) */

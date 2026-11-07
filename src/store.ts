@@ -3,7 +3,7 @@ import type { AppData, Category, Ingredient, MealRecord, StockStatus } from './t
 
 const STORAGE_KEY = 'baby-care:data'
 
-const EMPTY: AppData = { version: 1, ingredients: [], extras: [], records: [] }
+const EMPTY: AppData = { version: 1, ingredients: [], extras: [], records: [], hiddenSuggestions: [] }
 
 function load(): AppData {
   try {
@@ -63,6 +63,17 @@ export function useStore() {
         ingredients: d.ingredients.map((i) =>
           i.id === id ? { ...i, inCart: !i.inCart } : i,
         ),
+      }))
+    },
+
+    hideSuggestion(name: string) {
+      setData((d) => ({ ...d, hiddenSuggestions: [...d.hiddenSuggestions, name] }))
+    },
+
+    restoreSuggestions(names: string[]) {
+      setData((d) => ({
+        ...d,
+        hiddenSuggestions: d.hiddenSuggestions.filter((n) => !names.includes(n)),
       }))
     },
 

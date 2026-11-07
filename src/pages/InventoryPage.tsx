@@ -12,6 +12,9 @@ export function InventoryPage({ store }: { store: Store }) {
   const [editing, setEditing] = useState(false)
 
   const existing = new Set(ingredients.map((i) => i.name))
+  const hidden = new Set(store.data.hiddenSuggestions)
+  const suggestions = SUGGESTIONS[category].filter((s) => !hidden.has(s))
+  const hiddenInCategory = SUGGESTIONS[category].filter((s) => hidden.has(s))
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,11 +25,9 @@ export function InventoryPage({ store }: { store: Store }) {
     <div className="page">
       <header className="page-header">
         <h1>재료 재고</h1>
-        {ingredients.length > 0 && (
-          <button className="text-btn" onClick={() => setEditing((v) => !v)}>
-            {editing ? '완료' : '편집'}
-          </button>
-        )}
+        <button className="text-btn" onClick={() => setEditing((v) => !v)}>
+          {editing ? '완료' : '편집'}
+        </button>
       </header>
 
       <div className="category-tabs" role="tablist">
@@ -44,8 +45,17 @@ export function InventoryPage({ store }: { store: Store }) {
       </div>
 
       <div className="chips">
-        {SUGGESTIONS[category].map((s) =>
-          existing.has(s) ? (
+        {suggestions.map((s) =>
+          editing ? (
+            <button
+              key={s}
+              className="chip removable"
+              onClick={() => store.hideSuggestion(s)}
+              aria-label={`${s} 후보에서 지우기`}
+            >
+              {s} ✕
+            </button>
+          ) : existing.has(s) ? (
             <span key={s} className="chip added">
               ✓ {s}
             </span>
@@ -54,6 +64,14 @@ export function InventoryPage({ store }: { store: Store }) {
               + {s}
             </button>
           ),
+        )}
+        {editing && hiddenInCategory.length > 0 && (
+          <button
+            className="chip restore"
+            onClick={() => store.restoreSuggestions(hiddenInCategory)}
+          >
+            지운 후보 {hiddenInCategory.length}개 되돌리기
+          </button>
         )}
       </div>
 
