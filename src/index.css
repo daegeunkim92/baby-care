@@ -687,3 +687,39 @@ textarea.text-input {
   background: var(--card);
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
 }
+
+.header-actions {
+  display: flex;
+  gap: 16px;
+}
+
+/* ---------- 백업 ---------- */
+
+.backup-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.backup-card h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: var(--fg);
+}
+
+.backup-card p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.backup-status {
+  margin-top: 12px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.backup-status.error {
+  color: var(--out);
+}

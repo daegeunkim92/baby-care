@@ -18,6 +18,23 @@ function load(): AppData {
 
 const newId = () => crypto.randomUUID()
 
+/** 백업 파일 내용을 검사해서 AppData로 변환. 형식이 맞지 않으면 null */
+export function parseBackup(text: string): AppData | null {
+  try {
+    const parsed = JSON.parse(text)
+    if (
+      parsed?.version !== 1 ||
+      !Array.isArray(parsed.ingredients) ||
+      !Array.isArray(parsed.records)
+    ) {
+      return null
+    }
+    return { ...EMPTY, ...parsed }
+  } catch {
+    return null
+  }
+}
+
 export function useStore() {
   const [data, setData] = useState<AppData>(load)
 
@@ -123,6 +140,11 @@ export function useStore() {
         ),
         extras: d.extras.filter((e) => !e.inCart),
       }))
+    },
+
+    /** 백업 불러오기: 현재 데이터를 통째로 바꿈 */
+    replaceData(next: AppData) {
+      setData(next)
     },
 
     /** id가 있으면 수정, 없으면 새 기록 추가 */

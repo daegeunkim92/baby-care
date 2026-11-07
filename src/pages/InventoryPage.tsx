@@ -2,6 +2,7 @@ import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from 
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useState } from 'react'
+import { BackupSheet } from '../components/BackupSheet'
 import type { Store } from '../store'
 import { CATEGORIES, STATUS_LABEL, SUGGESTIONS } from '../types'
 import type { Category, Ingredient, StockStatus } from '../types'
@@ -13,6 +14,7 @@ export function InventoryPage({ store }: { store: Store }) {
   const [name, setName] = useState('')
   const [category, setCategory] = useState<Category>('채소')
   const [editing, setEditing] = useState(false)
+  const [backupOpen, setBackupOpen] = useState(false)
   const sensors = useSensors(useSensor(PointerSensor))
 
   const existing = new Set(ingredients.map((i) => i.name))
@@ -31,9 +33,14 @@ export function InventoryPage({ store }: { store: Store }) {
       <div className="sticky-panel">
         <header className="page-header">
           <h1>재료 재고</h1>
-          <button className="text-btn" onClick={() => setEditing((v) => !v)}>
-            {editing ? '완료' : '편집'}
-          </button>
+          <div className="header-actions">
+            <button className="text-btn" onClick={() => setBackupOpen(true)}>
+              백업
+            </button>
+            <button className="text-btn" onClick={() => setEditing((v) => !v)}>
+              {editing ? '완료' : '편집'}
+            </button>
+          </div>
         </header>
 
         <div className="category-tabs" role="tablist">
@@ -122,6 +129,8 @@ export function InventoryPage({ store }: { store: Store }) {
           )
         })
       )}
+
+      {backupOpen && <BackupSheet store={store} onClose={() => setBackupOpen(false)} />}
     </div>
   )
 }
