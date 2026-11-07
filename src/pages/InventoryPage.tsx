@@ -18,7 +18,7 @@ export function InventoryPage({ store }: { store: Store }) {
   const [editing, setEditing] = useState(false)
   // 재료 추가 영역은 처음엔 항상 접어 둠
   const [addOpen, setAddOpen] = useState(false)
-  // 편집 중에는 분류 순서를 바꿀 수 있게 추가 영역을 항상 펼침
+  // 편집 중에는 분류 순서를 바꿀 수 있게 분류 탭을 항상 보여줌
   const panelOpen = addOpen || editing
   // 방금 추가한 재료 (그 줄로 스크롤하고 잠깐 강조)
   const [addedId, setAddedId] = useState<string | null>(null)
@@ -80,7 +80,8 @@ export function InventoryPage({ store }: { store: Store }) {
               onMove={store.moveCategory}
             />
 
-            {suggestions.length > 0 && (
+            {/* 편집 중엔 분류 탭만 (순서 바꾸기) */}
+            {!editing && suggestions.length > 0 && (
               <div className="chips suggestion-chips">
                 {suggestions.map((s) => (
                   <button key={s} className="chip" onClick={() => add(s)}>
@@ -90,17 +91,19 @@ export function InventoryPage({ store }: { store: Store }) {
               </div>
             )}
 
-            <form className="add-form" onSubmit={submit}>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={`${category.name}에 직접 추가`}
-                enterKeyHint="done"
-              />
-              <button type="submit" className="primary-btn" disabled={!name.trim()}>
-                추가
-              </button>
-            </form>
+            {!editing && (
+              <form className="add-form" onSubmit={submit}>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={`${category.name}에 직접 추가`}
+                  enterKeyHint="done"
+                />
+                <button type="submit" className="primary-btn" disabled={!name.trim()}>
+                  추가
+                </button>
+              </form>
+            )}
           </>
         ) : (
           <p className="empty">재료 분류가 없어요.</p>
