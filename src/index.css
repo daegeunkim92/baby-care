@@ -766,3 +766,41 @@ textarea.text-input {
   width: 100%;
   font-size: 17px;
 }
+
+/* ---------- 왼쪽으로 밀어서 삭제 ---------- */
+
+.row.swipe-row {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+}
+
+.swipe-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 12px;
+  background: var(--card);
+  /* 세로 스크롤은 브라우저가, 가로 밀기는 앱이 처리 */
+  touch-action: pan-y;
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+}
+
+.swipe-delete {
+  width: 80px;
+  background: var(--out);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}

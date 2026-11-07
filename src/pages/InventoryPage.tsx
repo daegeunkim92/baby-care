@@ -2,6 +2,7 @@ import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from 
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useState } from 'react'
+import { SwipeToDelete } from '../components/SwipeToDelete'
 import type { Store } from '../store'
 import { STATUS_LABEL } from '../types'
 import type { Ingredient, StockStatus } from '../types'
@@ -13,6 +14,8 @@ export function InventoryPage({ store }: { store: Store }) {
   const [name, setName] = useState('')
   const [selectedId, setSelectedId] = useState<string>()
   const [editing, setEditing] = useState(false)
+  // 왼쪽으로 밀어서 삭제 버튼이 열린 재료 (한 번에 하나만)
+  const [swipedId, setSwipedId] = useState<string | null>(null)
   const sensors = useSensors(useSensor(PointerSensor))
 
   // 고른 분류가 없거나 설정에서 지워졌으면 첫 분류
@@ -105,7 +108,14 @@ export function InventoryPage({ store }: { store: Store }) {
                 >
                   <SortableContext items={items} strategy={verticalListSortingStrategy}>
                     {items.map((item) => (
-                      <IngredientRow key={item.id} item={item} store={store} editing={editing} />
+                      <IngredientRow
+                        key={item.id}
+                        item={item}
+                        store={store}
+                        editing={editing}
+                        swiped={swipedId === item.id}
+                        onSwipedChange={(open) => setSwipedId(open ? item.id : null)}
+                      />
                     ))}
                   </SortableContext>
                 </DndContext>
@@ -122,10 +132,14 @@ function IngredientRow({
   item,
   store,
   editing,
+  swiped,
+  onSwipedChange,
 }: {
   item: Ingredient
   store: Store
   editing: boolean
+  swiped: boolean
+  onSwipedChange: (open: boolean) => void
 }) {
   const {
     attributes,
@@ -140,45 +154,53 @@ function IngredientRow({
   return (
     <li
       ref={setNodeRef}
-      className={`row ${isDragging ? 'dragging' : ''}`}
+      className={`row swipe-row ${isDragging ? 'dragging' : ''}`}
       // 세로로만 움직이게 x 이동은 무시
       style={{ transform: CSS.Transform.toString(transform && { ...transform, x: 0 }), transition }}
     >
-      {editing && (
-        <button
-          className="delete-btn"
-          onClick={() => store.removeIngredient(item.id)}
-          aria-label={`${item.name} 삭제`}
-        >
-          −
-        </button>
-      )}
-      <span className="row-name">{item.name}</span>
-      {editing ? (
-        <button
-          ref={setActivatorNodeRef}
-          className="drag-handle"
-          aria-label={`${item.name} 순서 바꾸기`}
-          {...attributes}
-          {...listeners}
-        >
-          ☰
-        </button>
-      ) : (
-        <div className="segmented" role="radiogroup">
-          {STATUSES.map((s) => (
-            <button
-              key={s}
-              role="radio"
-              aria-checked={item.status === s}
-              className={`seg seg-${s}`}
-              onClick={() => store.setStatus(item.id, s)}
-            >
-              {STATUS_LABEL[s]}
-            </button>
-          ))}
-        </div>
-      )}
+      <SwipeToDelete
+        open={swiped}
+        onOpenChange={onSwipedChange}
+        onDelete={() => store.removeIngredient(item.id)}
+        disabled={editing}
+        label={item.name}
+      >
+        {editing && (
+          <button
+            className="delete-btn"
+            onClick={() => store.removeIngredient(item.id)}
+            aria-label={`${item.name} 삭제`}
+          >
+            −
+          </button>
+        )}
+        <span className="row-name">{item.name}</span>
+        {editing ? (
+          <button
+            ref={setActivatorNodeRef}
+            className="drag-handle"
+            aria-label={`${item.name} 순서 바꾸기`}
+            {...attributes}
+            {...listeners}
+          >
+            ☰
+          </button>
+        ) : (
+          <div className="segmented" role="radiogroup">
+            {STATUSES.map((s) => (
+              <button
+                key={s}
+                role="radio"
+                aria-checked={item.status === s}
+                className={`seg seg-${s}`}
+                onClick={() => store.setStatus(item.id, s)}
+              >
+                {STATUS_LABEL[s]}
+              </button>
+            ))}
+          </div>
+        )}
+      </SwipeToDelete>
     </li>
   )
 }
