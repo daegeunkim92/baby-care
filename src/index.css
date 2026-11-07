@@ -1,5 +1,7 @@
 :root {
   color-scheme: light dark;
+  /* 모든 카드(목록, 백업 카드 등)의 좌우 안쪽 여백 */
+  --card-pad: 16px;
   font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
     'Noto Sans KR', system-ui, sans-serif;
   -webkit-text-size-adjust: 100%;
@@ -346,7 +348,7 @@ input[type='time']::-webkit-date-and-time-value {
   align-items: center;
   gap: 10px;
   min-height: 52px;
-  padding: 0 12px;
+  padding: 0 var(--card-pad);
 }
 
 .row + .row {
@@ -466,7 +468,7 @@ input[type='time']::-webkit-date-and-time-value {
 .record {
   display: block;
   width: 100%;
-  padding: 12px;
+  padding: 12px var(--card-pad);
   text-align: left;
 }
 
@@ -769,7 +771,7 @@ textarea.text-input {
 /* ---------- 백업 ---------- */
 
 .backup-card {
-  padding: 16px;
+  padding: var(--card-pad);
   border-radius: 12px;
   background: var(--card);
 }
@@ -914,6 +916,8 @@ textarea.text-input {
   gap: 8px;
   min-width: 0;
   min-height: 52px;
+  /* 두 줄짜리(아기 정보 등)도 위아래가 붙지 않게 */
+  padding: 12px 0;
   text-align: left;
 }
 
@@ -985,7 +989,7 @@ textarea.text-input {
 
 .reaction-summary {
   margin: 12px 0 0;
-  padding: 10px 12px;
+  padding: 12px var(--card-pad);
   border-radius: 10px;
   background: color-mix(in srgb, var(--out) 10%, var(--card));
   color: var(--out);
@@ -1036,6 +1040,8 @@ textarea.text-input {
 
 .food-row .row-link {
   gap: 10px;
+  /* 위아래 여백은 food-row가 이미 줌 */
+  padding: 0;
 }
 
 .update-available {
