@@ -1,4 +1,5 @@
 import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useCallback, useEffect, useState } from 'react'
@@ -152,6 +153,8 @@ export function InventoryPage({ store }: { store: Store }) {
                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
+                  // 자기 분류 목록 밖으로 못 나가게: 화면 끝을 넘어가면 아이폰에서 끝없이 스크롤됐음
+                  modifiers={[restrictToVerticalAxis, restrictToParentElement]}
                   onDragEnd={({ active, over }) =>
                     over && store.moveIngredient(String(active.id), String(over.id))
                   }
@@ -218,8 +221,7 @@ function IngredientRow({
       ref={setNodeRef}
       data-ingredient-id={item.id}
       className={`row ${isDragging ? 'dragging' : ''} ${highlighted ? 'just-added' : ''}`}
-      // 세로로만 움직이게 x 이동은 무시
-      style={{ transform: CSS.Transform.toString(transform && { ...transform, x: 0 }), transition }}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
     >
       {editing && (
         <button className="delete-btn" onClick={onDelete} aria-label={`${item.name} 삭제`}>
