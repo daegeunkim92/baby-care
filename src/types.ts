@@ -62,8 +62,16 @@ export interface MealRecord {
   photoId?: string | null
 }
 
+export interface BabyInfo {
+  name: string
+  /** YYYY-MM-DD */
+  birthDate: string
+}
+
 export interface AppData {
   version: 2
+  /** 처음 실행할 때 입력 (없으면 입력 화면을 띄움) */
+  baby: BabyInfo | null
   categories: Category[]
   ingredients: Ingredient[]
   extras: ExtraItem[]

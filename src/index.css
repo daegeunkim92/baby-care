@@ -811,3 +811,174 @@ textarea.text-input {
   background: var(--seg-bg);
   object-fit: cover;
 }
+
+/* ---------- 첫 화면 (아기 정보) ---------- */
+
+.welcome {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 48px) 24px calc(env(safe-area-inset-bottom) + 32px);
+  text-align: center;
+}
+
+.welcome-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 20px;
+}
+
+.welcome h1 {
+  margin: 20px 0 8px;
+  font-size: 24px;
+}
+
+.welcome-desc {
+  margin: 0 0 28px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.welcome-restore {
+  margin-top: 40px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.welcome-restore p {
+  margin: 0 0 6px;
+}
+
+.baby-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field > span {
+  margin-left: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.field input {
+  width: 100%;
+}
+
+.cancel-btn {
+  align-self: center;
+}
+
+/* ---------- 설정 ---------- */
+
+.row-link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 52px;
+  text-align: left;
+}
+
+.row-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.row-count {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.row-action {
+  color: var(--accent);
+  font-size: 15px;
+}
+
+.chevron {
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.hint.left {
+  margin: 6px 4px 0;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.danger-btn.flat {
+  margin-top: 0;
+}
+
+.last-backup {
+  font-weight: 600;
+}
+
+.last-backup.warn {
+  color: var(--out);
+}
+
+.tab-dot {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--out);
+}
+
+.day-age {
+  font-weight: 500;
+}
+
+/* ---------- 먹어본 재료 ---------- */
+
+.back-btn {
+  margin-left: -4px;
+}
+
+.sub-title {
+  margin: 0 0 4px;
+  font-size: 28px;
+}
+
+.reaction-summary {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--out) 10%, var(--card));
+  color: var(--out);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.food-row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.food-row.has-reaction .row-name {
+  color: var(--out);
+  font-weight: 600;
+}
+
+.food-meta {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: right;
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { deletePhoto } from './photos'
+import { deletePhoto, replaceAllPhotos } from './photos'
 import { DEFAULT_CATEGORIES } from './types'
-import type { AppData, Category, Ingredient, MealRecord, StockStatus } from './types'
+import type { AppData, BabyInfo, Category, Ingredient, MealRecord, StockStatus } from './types'
 
 const STORAGE_KEY = 'baby-care:data'
 
@@ -10,6 +10,7 @@ const newId = () => crypto.randomUUID()
 function initialData(): AppData {
   return {
     version: 2,
+    baby: null,
     categories: DEFAULT_CATEGORIES.map((c) => ({ id: newId(), ...c })),
     ingredients: [],
     extras: [],
@@ -20,7 +21,7 @@ function initialData(): AppData {
 /** 저장된 데이터나 백업 파일을 현재 형식(version 2)으로 변환. 형식이 맞지 않으면 null */
 function migrate(raw: any): AppData | null {
   if (!Array.isArray(raw?.ingredients) || !Array.isArray(raw?.records)) return null
-  const rest = { extras: raw.extras ?? [], records: raw.records }
+  const rest = { baby: raw.baby ?? null, extras: raw.extras ?? [], records: raw.records }
 
   if (raw.version === 2 && Array.isArray(raw.categories)) {
     return { version: 2, categories: raw.categories, ingredients: raw.ingredients, ...rest }
@@ -201,6 +202,16 @@ export function useStore() {
 
     moveCategory(activeId: string, overId: string) {
       setData((d) => ({ ...d, categories: moveById(d.categories, activeId, overId) }))
+    },
+
+    setBaby(baby: BabyInfo) {
+      setData((d) => ({ ...d, baby }))
+    },
+
+    /** 모든 데이터와 사진을 지우고 처음 상태로 */
+    async resetAll() {
+      await replaceAllPhotos([])
+      setData(initialData())
     },
 
     /** 백업 불러오기: 현재 데이터를 통째로 바꿈 */

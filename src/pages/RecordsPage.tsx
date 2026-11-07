@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { RecordForm } from '../components/RecordForm'
-import { formatDateLabel } from '../date'
+import { formatAge, formatDateLabel } from '../date'
 import { usePhotoUrl } from '../photos'
 import type { Store } from '../store'
 import { APPETITE_LABEL } from '../types'
@@ -21,7 +21,7 @@ function findFirstTimes(records: MealRecord[]) {
 }
 
 export function RecordsPage({ store }: { store: Store }) {
-  const { records } = store.data
+  const { records, baby } = store.data
   // null: 닫힘, 'new': 새 기록, 그 외: 수정할 기록
   const [editing, setEditing] = useState<MealRecord | 'new' | null>(null)
 
@@ -52,7 +52,12 @@ export function RecordsPage({ store }: { store: Store }) {
       ) : (
         days.map(({ date, items }) => (
           <section key={date} className="group">
-            <h2>{formatDateLabel(date)}</h2>
+            <h2>
+              {formatDateLabel(date)}
+              {baby && formatAge(baby.birthDate, date) && (
+                <span className="day-age"> · 생후 {formatAge(baby.birthDate, date)}</span>
+              )}
+            </h2>
             <ul className="list">
               {items.map((r) => {
                 const firsts = firstTimes.get(r.id)
