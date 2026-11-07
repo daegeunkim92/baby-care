@@ -33,10 +33,41 @@ export interface ExtraItem {
   inCart: boolean
 }
 
+export const MEALS = ['아침', '점심', '저녁', '간식'] as const
+
+export type Meal = (typeof MEALS)[number]
+
+export type Appetite = 'good' | 'normal' | 'refused'
+
+export const APPETITE_LABEL: Record<Appetite, string> = {
+  good: '잘 먹음',
+  normal: '보통',
+  refused: '거부',
+}
+
+export interface MealRecord {
+  id: string
+  /** YYYY-MM-DD (로컬 날짜) */
+  date: string
+  /** HH:MM */
+  time: string
+  meal: Meal
+  menu: string
+  /** 재료 이름 목록 (재고에 없는 재료도 가능) */
+  ingredients: string[]
+  /** 먹은 양 (g) */
+  amount: number | null
+  appetite: Appetite | null
+  /** 알레르기 등 이상 반응 여부 */
+  reaction: boolean
+  memo: string
+}
+
 export interface AppData {
   version: 1
   ingredients: Ingredient[]
   extras: ExtraItem[]
+  records: MealRecord[]
 }
 
 /** 빠른 추가용 자주 쓰는 이유식 재료 (분류별) */

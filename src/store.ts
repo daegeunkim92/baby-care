@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import type { AppData, Category, Ingredient, StockStatus } from './types'
+import type { AppData, Category, Ingredient, MealRecord, StockStatus } from './types'
 
 const STORAGE_KEY = 'baby-care:data'
 
-const EMPTY: AppData = { version: 1, ingredients: [], extras: [] }
+const EMPTY: AppData = { version: 1, ingredients: [], extras: [], records: [] }
 
 function load(): AppData {
   try {
@@ -99,6 +99,21 @@ export function useStore() {
         ),
         extras: d.extras.filter((e) => !e.inCart),
       }))
+    },
+
+    /** id가 있으면 수정, 없으면 새 기록 추가 */
+    saveRecord(record: Omit<MealRecord, 'id'> & { id?: string }) {
+      setData((d) => {
+        if (record.id) {
+          const saved = record as MealRecord
+          return { ...d, records: d.records.map((r) => (r.id === saved.id ? saved : r)) }
+        }
+        return { ...d, records: [...d.records, { ...record, id: newId() }] }
+      })
+    },
+
+    removeRecord(id: string) {
+      setData((d) => ({ ...d, records: d.records.filter((r) => r.id !== id) }))
     },
   }
 }

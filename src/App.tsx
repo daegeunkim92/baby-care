@@ -1,22 +1,29 @@
 import { useState } from 'react'
 import { InventoryPage } from './pages/InventoryPage'
+import { RecordsPage } from './pages/RecordsPage'
 import { ShoppingPage } from './pages/ShoppingPage'
 import { useStore } from './store'
 
-type Tab = 'inventory' | 'shopping'
+type Tab = 'records' | 'inventory' | 'shopping'
 
 function App() {
   const store = useStore()
-  const [tab, setTab] = useState<Tab>('inventory')
+  const [tab, setTab] = useState<Tab>('records')
   const toBuyCount = store.data.ingredients.filter((i) => i.status !== 'plenty').length
 
   return (
     <div className="app">
       <main className="content">
-        {tab === 'inventory' ? <InventoryPage store={store} /> : <ShoppingPage store={store} />}
+        {tab === 'records' && <RecordsPage store={store} />}
+        {tab === 'inventory' && <InventoryPage store={store} />}
+        {tab === 'shopping' && <ShoppingPage store={store} />}
       </main>
 
       <nav className="tab-bar">
+        <button className={tab === 'records' ? 'active' : ''} onClick={() => setTab('records')}>
+          <span className="tab-icon">🥣</span>
+          기록
+        </button>
         <button
           className={tab === 'inventory' ? 'active' : ''}
           onClick={() => setTab('inventory')}
