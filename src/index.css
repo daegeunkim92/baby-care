@@ -70,6 +70,26 @@ select {
   font-size: 16px;
 }
 
+/* 아이폰 사파리는 날짜·시간 입력칸에 자체 최소 폭을 줘서 width: 100%여도 화면 밖으로 늘어남 */
+input[type='date'],
+input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  /* 값이 비어 있을 때 높이가 0으로 줄어드는 것도 막음 */
+  min-height: 44px;
+  line-height: 44px;
+  text-align: left;
+}
+
+input[type='date']::-webkit-date-and-time-value,
+input[type='time']::-webkit-date-and-time-value {
+  margin: 0;
+  text-align: left;
+}
+
 /* ---------- 레이아웃 ---------- */
 
 .content {
@@ -1027,4 +1047,12 @@ textarea.text-input {
   height: 34px;
   padding: 0 14px;
   font-size: 15px;
+}
+
+/* 버튼처럼 보이는 링크 */
+.link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }

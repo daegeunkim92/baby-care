@@ -5,6 +5,7 @@ import { formatAge, toDateStr } from '../date'
 import { summarizeFoods } from '../foods'
 import type { Store } from '../store'
 import { applyUpdate, checkForUpdate } from '../update'
+import { FeedbackPage } from './FeedbackPage'
 import { FirstFoodsPage } from './FirstFoodsPage'
 
 const builtAt = new Date(__APP_BUILT_AT__)
@@ -20,7 +21,7 @@ const UPDATE_MESSAGE: Partial<Record<UpdateState, string>> = {
 }
 
 export function SettingsPage({ store }: { store: Store }) {
-  const [view, setView] = useState<'main' | 'foods'>('main')
+  const [view, setView] = useState<'main' | 'foods' | 'feedback'>('main')
   const [editingBaby, setEditingBaby] = useState(false)
   const [today] = useState(() => toDateStr(new Date()))
   const [update, setUpdate] = useState<UpdateState>('idle')
@@ -37,6 +38,7 @@ export function SettingsPage({ store }: { store: Store }) {
   const foodCount = summarizeFoods(store.data).length
 
   if (view === 'foods') return <FirstFoodsPage store={store} onBack={() => setView('main')} />
+  if (view === 'feedback') return <FeedbackPage onBack={() => setView('main')} />
 
   const reset = async () => {
     if (!confirm('재고, 기록, 사진, 아기 정보를 모두 지울까요?')) return
@@ -137,6 +139,12 @@ export function SettingsPage({ store }: { store: Store }) {
                 )}
               </>
             )}
+          </li>
+          <li className="row">
+            <button className="row-link" onClick={() => setView('feedback')}>
+              <span className="row-name">기능 제안하기</span>
+              <span className="chevron">›</span>
+            </button>
           </li>
         </ul>
         <p className="hint left">
