@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BabyForm } from '../components/BabyForm'
 import { BackupSection } from '../components/BackupSection'
 import { formatAge, toDateStr } from '../date'
+import { summarizeFoods } from '../foods'
 import type { Store } from '../store'
 import { FirstFoodsPage } from './FirstFoodsPage'
 
@@ -13,8 +14,8 @@ export function SettingsPage({ store }: { store: Store }) {
   const [view, setView] = useState<'main' | 'foods'>('main')
   const [editingBaby, setEditingBaby] = useState(false)
   const [today] = useState(() => toDateStr(new Date()))
-  const { baby, records } = store.data
-  const foodCount = new Set(records.flatMap((r) => r.ingredients)).size
+  const { baby } = store.data
+  const foodCount = summarizeFoods(store.data).length
 
   if (view === 'foods') return <FirstFoodsPage store={store} onBack={() => setView('main')} />
 
