@@ -118,6 +118,8 @@ select {
   left: 0;
   right: 0;
   bottom: 0;
+  /* 목록의 행(z-index 1)과 고정 영역(5)보다 위, 입력 시트(10)보다 아래 */
+  z-index: 8;
   display: flex;
   height: calc(var(--tab-h) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
