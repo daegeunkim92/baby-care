@@ -77,6 +77,19 @@ export function useStore() {
       }))
     },
 
+    /** activeId 재료를 overId 재료 자리로 옮김 (같은 분류 안에서 순서 바꾸기) */
+    moveIngredient(activeId: string, overId: string) {
+      setData((d) => {
+        const from = d.ingredients.findIndex((i) => i.id === activeId)
+        const to = d.ingredients.findIndex((i) => i.id === overId)
+        if (from < 0 || to < 0 || from === to) return d
+        const ingredients = [...d.ingredients]
+        const [moved] = ingredients.splice(from, 1)
+        ingredients.splice(to, 0, moved)
+        return { ...d, ingredients }
+      })
+    },
+
     removeIngredient(id: string) {
       setData((d) => ({ ...d, ingredients: d.ingredients.filter((i) => i.id !== id) }))
     },

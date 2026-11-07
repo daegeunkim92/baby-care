@@ -1,7 +1,10 @@
+import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useState } from 'react'
 import type { Store } from '../store'
 import { CATEGORIES, STATUS_LABEL, SUGGESTIONS } from '../types'
-import type { Category, StockStatus } from '../types'
+import type { Category, Ingredient, StockStatus } from '../types'
 
 const STATUSES: StockStatus[] = ['plenty', 'low', 'out']
 
@@ -10,6 +13,7 @@ export function InventoryPage({ store }: { store: Store }) {
   const [name, setName] = useState('')
   const [category, setCategory] = useState<Category>('채소')
   const [editing, setEditing] = useState(false)
+  const sensors = useSensors(useSensor(PointerSensor))
 
   const existing = new Set(ingredients.map((i) => i.name))
   const hidden = new Set(store.data.hiddenSuggestions)
@@ -100,38 +104,89 @@ export function InventoryPage({ store }: { store: Store }) {
             <section key={cat} className="group">
               <h2>{cat}</h2>
               <ul className="list">
-                {items.map((item) => (
-                  <li key={item.id} className="row">
-                    {editing && (
-                      <button
-                        className="delete-btn"
-                        onClick={() => store.removeIngredient(item.id)}
-                        aria-label={`${item.name} 삭제`}
-                      >
-                        −
-                      </button>
-                    )}
-                    <span className="row-name">{item.name}</span>
-                    <div className="segmented" role="radiogroup">
-                      {STATUSES.map((s) => (
-                        <button
-                          key={s}
-                          role="radio"
-                          aria-checked={item.status === s}
-                          className={`seg seg-${s}`}
-                          onClick={() => store.setStatus(item.id, s)}
-                        >
-                          {STATUS_LABEL[s]}
-                        </button>
-                      ))}
-                    </div>
-                  </li>
-                ))}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={({ active, over }) =>
+                    over && store.moveIngredient(String(active.id), String(over.id))
+                  }
+                >
+                  <SortableContext items={items} strategy={verticalListSortingStrategy}>
+                    {items.map((item) => (
+                      <IngredientRow key={item.id} item={item} store={store} editing={editing} />
+                    ))}
+                  </SortableContext>
+                </DndContext>
               </ul>
             </section>
           )
         })
       )}
     </div>
+  )
+}
+
+function IngredientRow({
+  item,
+  store,
+  editing,
+}: {
+  item: Ingredient
+  store: Store
+  editing: boolean
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id, disabled: !editing })
+
+  return (
+    <li
+      ref={setNodeRef}
+      className={`row ${isDragging ? 'dragging' : ''}`}
+      // 세로로만 움직이게 x 이동은 무시
+      style={{ transform: CSS.Transform.toString(transform && { ...transform, x: 0 }), transition }}
+    >
+      {editing && (
+        <button
+          className="delete-btn"
+          onClick={() => store.removeIngredient(item.id)}
+          aria-label={`${item.name} 삭제`}
+        >
+          −
+        </button>
+      )}
+      <span className="row-name">{item.name}</span>
+      {editing ? (
+        <button
+          ref={setActivatorNodeRef}
+          className="drag-handle"
+          aria-label={`${item.name} 순서 바꾸기`}
+          {...attributes}
+          {...listeners}
+        >
+          ☰
+        </button>
+      ) : (
+        <div className="segmented" role="radiogroup">
+          {STATUSES.map((s) => (
+            <button
+              key={s}
+              role="radio"
+              aria-checked={item.status === s}
+              className={`seg seg-${s}`}
+              onClick={() => store.setStatus(item.id, s)}
+            >
+              {STATUS_LABEL[s]}
+            </button>
+          ))}
+        </div>
+      )}
+    </li>
   )
 }
